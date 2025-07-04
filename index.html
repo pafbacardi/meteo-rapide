@@ -36,7 +36,17 @@
         /* Application des variables aux éléments */
         h1 { color: var(--header-text); }
         #current-location-display { color: var(--header-text); }
-        .section-title { color: var(--section-text); border-bottom-color: var(--section-text); }
+        /* Style des titres de section mis à jour */
+        .section-title {
+            color: #2196F3; /* Bleu clair comme dans l'image */
+            border-bottom: 2px solid #2196F3; /* Bordure bleue */
+            padding-bottom: 5px; /* Espace sous la bordure */
+            margin-top: 30px; /* Espace au-dessus de chaque section */
+            margin-bottom: 15px; /* Espace sous le titre */
+            font-size: 1.8em; /* Taille de police ajustée */
+            font-weight: bold;
+            /* text-align: center; -> Déplacé vers .toggle-title-text */
+        }
         .weather-card { background-color: var(--card-bg); }
         .day-card { background-color: var(--card-bg); }
         .weather-button { background-color: var(--button-bg); color: var(--button-text); }
@@ -396,7 +406,8 @@
             margin-right: auto;
         }
 
-        #weather-alerts-section .section-title { /* Style pour le titre des alertes */
+        /* Le style du section-title est maintenant global, pas besoin de le redéfinir ici */
+        #weather-alerts-section .section-title {
             margin-top: 0; /* Pas de marge en haut pour le titre de la section */
         }
 
@@ -445,6 +456,103 @@
         }
         .alert-icon:hover {
             transform: scale(1.2);
+        }
+
+        /* Styles pour les sections dépliables */
+        .collapsible-section {
+            margin-bottom: 10px;
+            border-radius: 15px;
+            overflow: hidden; /* Cache le contenu quand max-height est 0 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        .collapsible-toggle {
+            cursor: pointer;
+            background-color: transparent; /* Pas de fond */
+            color: #2196F3; /* Couleur de texte bleue */
+            font-size: 1.8em; /* Taille de police du section-title */
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between; /* Aligne le texte à gauche et l'icône à droite */
+            align-items: center;
+            border-bottom: 2px solid #2196F3; /* Bordure inférieure bleue */
+            padding: 15px 15px 5px 15px; /* Ajuste le padding pour l'espace sur les côtés */
+            border-radius: 0; /* Pas de coins arrondis spécifiques pour le toggle */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            width: 100%; /* S'assure que le toggle prend toute la largeur */
+            box-sizing: border-box; /* Inclut le padding dans la largeur */
+        }
+        .collapsible-toggle:hover {
+            background-color: transparent; /* Pas de changement de fond au survol */
+            color: #1976D2; /* Un bleu légèrement plus foncé au survol */
+        }
+
+        .toggle-title-text { /* Nouvelle classe pour le texte du titre */
+            flex-grow: 1; /* Permet au texte de prendre l'espace disponible */
+            text-align: center; /* Centre le texte dans l'espace disponible */
+        }
+
+        .toggle-icon {
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+            color: #333; /* Couleur plus foncée pour la flèche pour meilleure visibilité */
+            /* margin-left: 10px; -> N'est plus nécessaire avec justify-content: space-between */
+        }
+        .collapsible-toggle.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out; /* Transition douce pour le dépliage */
+            padding: 0 10px; /* Padding latéral pour le contenu */
+            background-color: #ffffff; /* Fond blanc pour le contenu déplié */
+            border-radius: 0 0 15px 15px; /* Coins arrondis en bas */
+        }
+        .collapsible-content.expanded {
+            /* max-height sera défini par JS */
+            padding-bottom: 10px; /* Ajoute un peu de padding en bas quand déplié */
+        }
+
+        /* Styles spécifiques pour la section protégée par mot de passe */
+        .password-prompt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background-color: var(--input-section-bg);
+            border-radius: 10px;
+            margin: 10px auto;
+            max-width: 300px;
+        }
+        .password-prompt input[type="password"] {
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .password-prompt button {
+            padding: 10px 20px;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .password-prompt button:hover {
+            background-color: #6A1B9A; /* Un peu plus foncé */
+        }
+        .password-error {
+            color: #e53935;
+            font-size: 0.9em;
+            margin-top: 5px;
         }
 
 
@@ -557,32 +665,71 @@
         </div>
     </div>
 
-    <div class="container">
-        <!-- Nouvelle section pour la frise de pluie minute par minute -->
-        <h2 class="section-title">La pluie dans l'heure qui vient ! 💧</h2>
-        <div id="minutely-forecast" class="minutely-forecast-container">
-            <p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>
-            <!-- La frise sera ajoutée ici par JavaScript -->
+    <!-- Nouvelle section: Que s'est-il passé dans les 24h précédentes -->
+    <div class="collapsible-section">
+        <h2 class="section-title collapsible-toggle" data-target="previous-hourly-forecast-content">
+            <span class="toggle-title-text">Que s'est-il passé dans les 24h précédentes ? 🕰️</span> <span class="toggle-icon">▼</span>
+        </h2>
+        <div id="previous-hourly-forecast-content" class="collapsible-content container">
+            <!-- Contenu initial avec mot de passe -->
+            <div id="password-prompt-container" class="password-prompt">
+                <p>Pour accéder aux données historiques, entre le mot de passe :</p>
+                <input type="password" id="password-input" placeholder="Mot de passe">
+                <button id="btn-unlock-history">Déverrouiller</button>
+                <p id="password-error-message" class="password-error"></p>
+            </div>
+            <!-- Les données historiques seront chargées ici après validation -->
+            <div id="historical-data-display" class="hourly-forecast" style="display: none;">
+                <p class="error-message" id="previous-hourly-loading"></p>
+            </div>
         </div>
+    </div>
 
-        <h2 class="section-title">Les 24h à venir ! ⏰</h2>
-        <div id="hourly-forecast" class="hourly-forecast">
-            <!-- La météo heure par heure sera ajoutée ici par JavaScript -->
-            <p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>
+    <!-- Section: La pluie dans l'heure qui vient ! -->
+    <div class="collapsible-section">
+        <h2 class="section-title collapsible-toggle expanded" data-target="minutely-forecast-content">
+            <span class="toggle-title-text">La pluie dans l'heure qui vient ! 💧</span> <span class="toggle-icon">▲</span>
+        </h2>
+        <div id="minutely-forecast-content" class="collapsible-content container expanded">
+            <div id="minutely-forecast" class="minutely-forecast-container">
+                <p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>
+            </div>
         </div>
+    </div>
 
-        <h2 class="section-title">Les jours suivants (J+1 à J+7) ! 🗓️</h2>
-        <div id="daily-forecast" class="daily-forecast">
-            <!-- Les cartes de météo journalière seront générées ici par JavaScript -->
+    <!-- Section: Les 24h à venir ! -->
+    <div class="collapsible-section">
+        <h2 class="section-title collapsible-toggle expanded" data-target="hourly-forecast-content">
+            <span class="toggle-title-text">Les 24h à venir ! ⏰</span> <span class="toggle-icon">▲</span>
+        </h2>
+        <div id="hourly-forecast-content" class="collapsible-content container expanded">
+            <div id="hourly-forecast" class="hourly-forecast">
+                <p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Les jours suivants (J+1 à J+7) ! -->
+    <div class="collapsible-section">
+        <h2 class="section-title collapsible-toggle" data-target="daily-forecast-content">
+            <span class="toggle-title-text">Les jours suivants (J+1 à J+7) ! 🗓️</span> <span class="toggle-icon">▼</span>
+        </h2>
+        <div id="daily-forecast-content" class="collapsible-content container">
+            <div id="daily-forecast" class="daily-forecast">
+                <p class="error-message" id="daily-loading">Chargement des prévisions des prochains jours...</p>
+            </div>
         </div>
     </div>
 
     <!-- Section pour les alertes météo, placée tout en bas -->
-    <div id="weather-alerts-section" class="container">
-        <h2 class="section-title">Alertes Météo ! ⚠️</h2>
-        <div id="weather-alerts">
-            <p class="error-message" id="alerts-loading">Chargement des alertes météo...</p>
-            <!-- Les alertes seront ajoutées ici par JavaScript -->
+    <div class="collapsible-section">
+        <h2 class="section-title collapsible-toggle" data-target="weather-alerts-content">
+            <span class="toggle-title-text">Alertes Météo ! ⚠️</span> <span class="toggle-icon">▼</span>
+        </h2>
+        <div id="weather-alerts-content" class="collapsible-content container">
+            <div id="weather-alerts">
+                <p class="error-message" id="alerts-loading">Chargement des alertes météo...</p>
+            </div>
         </div>
     </div>
 
@@ -593,6 +740,9 @@
         const DEFAULT_LOCATION_NAME = 'Charvieu-Chavagneux';
         const LANG = 'fr';   // Langue des résultats
         const UNITS = 'metric'; // Unités métriques (Celsius)
+
+        // Flag pour simuler les appels API
+        const SIMULATE_API_CALLS = false; // Définir à false pour les vrais appels API
 
         // Éléments du DOM
         const body = document.body;
@@ -607,9 +757,23 @@
         const citySelectionResults = document.getElementById('city-selection-results');
         const mapIframe = document.getElementById('map-iframe');
         const weatherAlertsContainer = document.getElementById('weather-alerts');
+        
+        // Nouveaux éléments pour la section historique protégée
+        const passwordPromptContainer = document.getElementById('password-prompt-container');
+        const passwordInput = document.getElementById('password-input');
+        const btnUnlockHistory = document.getElementById('btn-unlock-history');
+        const passwordErrorMessage = document.getElementById('password-error-message');
+        const historicalDataDisplay = document.getElementById('historical-data-display');
+        const previousHourlyLoadingMessage = document.getElementById('previous-hourly-loading');
+
 
         // Variable globale pour stocker les alertes
         let globalAlerts = [];
+        // Variable pour stocker la localisation actuelle (lat/lon) pour les appels historiques
+        let currentLat = DEFAULT_LAT;
+        let currentLon = DEFAULT_LON;
+
+        // --- Fonctions utilitaires ---
 
         // Fonction pour obtenir les icônes météo (maintenant des emojis)
         function getWeatherIcon(iconCode) {
@@ -643,9 +807,9 @@
 
             switch (baseIcon) {
                 case "01": return isDay ? "theme-sunny" : "theme-night";
-                case "02": return isDay ? "theme-cloudy" : "theme-night"; // Few clouds, can be similar to night theme
+                case "02": return isDay ? "theme-cloudy" : "theme-night";
                 case "03": return "theme-cloudy";
-                case "04": return "theme-cloudy"; // Overcast is still cloudy
+                case "04": return "theme-cloudy";
                 case "09": return "theme-rainy";
                 case "10": return "theme-rainy";
                 case "11": return "theme-thunderstorm";
@@ -657,18 +821,15 @@
 
         // Fonction pour appliquer le thème
         function applyTheme(themeClassName) {
-            // Supprime toutes les classes de thème existantes
             const themeClasses = [
                 "theme-sunny", "theme-cloudy", "theme-rainy", "theme-snowy",
                 "theme-thunderstorm", "theme-mist", "theme-night"
             ];
             themeClasses.forEach(cls => body.classList.remove(cls));
-            
-            // Ajoute la nouvelle classe de thème
             body.classList.add(themeClassName);
         }
 
-        // Fonction pour formater l'heure (ex: 14h00)
+        // Fonctions de formatage de date/heure
         function formatTime(timestamp) {
             const date = new Date(timestamp * 1000);
             const hours = date.getHours().toString().padStart(2, '0');
@@ -676,14 +837,12 @@
             return `${hours}h${minutes}`;
         }
 
-        // Fonction pour formater la date (ex: Mer. 5 juil.)
         function formatDate(timestamp) {
             const date = new Date(timestamp * 1000);
             const options = { weekday: 'short', day: 'numeric', month: 'short' };
             return date.toLocaleDateString('fr-FR', options);
         }
 
-        // Fonction pour formater la date et l'heure complètes
         function formatDateTime(timestamp) {
             const date = new Date(timestamp * 1000);
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -696,7 +855,6 @@
             for (const alert of globalAlerts) {
                 const alertStartMs = alert.start * 1000;
                 const alertEndMs = alert.end * 1000;
-                // Vérifie si le timestamp de la prévision est dans la période de l'alerte
                 if (timeMs >= alertStartMs && timeMs <= alertEndMs) {
                     return true;
                 }
@@ -704,23 +862,20 @@
             return false;
         }
 
-        // Fonction pour afficher les alertes météo
-        function displayAlerts(alertsData) {
-            weatherAlertsContainer.innerHTML = ''; // Vide le conteneur des alertes
+        // --- Fonctions d'affichage des données météo ---
 
+        function displayAlerts(alertsData) {
+            weatherAlertsContainer.innerHTML = '';
             if (!alertsData || alertsData.length === 0) {
                 weatherAlertsContainer.innerHTML = '<p>Aucune alerte météo active pour le moment. Tout va bien ! 😊</p>';
                 return;
             }
-
             alertsData.forEach(alert => {
                 const alertDiv = document.createElement('div');
                 const severityClass = `alert-${alert.severity ? alert.severity.toLowerCase() : 'unknown'}`;
                 alertDiv.className = `alert-item ${severityClass}`;
-
                 const startDate = formatDateTime(alert.start);
                 const endDate = formatDateTime(alert.end);
-
                 alertDiv.innerHTML = `
                     <h3>${alert.event}</h3>
                     <p><strong>De :</strong> ${alert.sender_name || 'Inconnu'}</p>
@@ -733,27 +888,20 @@
             });
         }
 
-
-        // Fonction pour afficher la frise de pluie minute par minute
         function displayMinutelyForecast(minutelyData) {
             const minutelyContainer = document.getElementById('minutely-forecast');
             minutelyContainer.innerHTML = '';
-
             if (!minutelyData || minutelyData.length === 0) {
                 minutelyContainer.innerHTML = '<p class="precipitation">Pas de prévisions de pluie minute par minute disponibles pour le moment.</p>';
                 return;
             }
-
             const timelineDiv = document.createElement('div');
             timelineDiv.className = 'minutely-timeline';
-            
             for (let i = 0; i < 60; i++) {
                 const minute = minutelyData[i];
                 if (!minute) continue;
-
                 const precipitation = minute.precipitation;
-                let backgroundColor = '#e0f7fa'; 
-
+                let backgroundColor = '#e0f7fa';
                 if (precipitation > 0 && precipitation <= 0.5) {
                     backgroundColor = '#bbdefb';
                 } else if (precipitation > 0.5 && precipitation <= 2) {
@@ -763,26 +911,21 @@
                 } else if (precipitation > 5) {
                     backgroundColor = '#42a5f5';
                 }
-
                 const minuteBlock = document.createElement('div');
                 minuteBlock.className = 'minute-block';
-                minuteBlock.style.backgroundColor = backgroundColor;
                 minuteBlock.title = `Dans ${i} min : ${precipitation.toFixed(1)} mm/h`;
+                minuteBlock.style.backgroundColor = backgroundColor;
                 timelineDiv.appendChild(minuteBlock);
             }
             minutelyContainer.appendChild(timelineDiv);
-
             const labelsDiv = document.createElement('div');
             labelsDiv.className = 'timeline-labels';
             const now = new Date();
-
             for (let i = 0; i <= 60; i += 10) {
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'timeline-label';
-                
                 const positionPercentage = (i / 60) * 100;
                 labelSpan.style.left = `${positionPercentage}%`;
-
                 if (i === 0) {
                     labelSpan.style.transform = 'translateX(0%)';
                     labelSpan.style.textAlign = 'left';
@@ -793,29 +936,30 @@
                     labelSpan.style.transform = 'translateX(-50%)';
                     labelSpan.style.textAlign = 'center';
                 }
-
                 const futureTime = new Date(now.getTime() + i * 60 * 1000);
                 const hours = futureTime.getHours().toString().padStart(2, '0');
                 const minutes = futureTime.getMinutes().toString().padStart(2, '0');
                 labelSpan.textContent = `${hours}h${minutes}`;
-
                 labelsDiv.appendChild(labelSpan);
             }
             minutelyContainer.appendChild(labelsDiv);
         }
 
+        function displayHourlyForecast(hourlyData, containerElement) {
+            containerElement.innerHTML = ''; // Clear previous content
 
-        // Fonction pour afficher la météo heure par heure (les 24h à venir)
-        function displayHourlyForecast(hourlyData) {
-            const hourlyContainer = document.getElementById('hourly-forecast');
-            hourlyContainer.innerHTML = '';
+            if (!hourlyData || hourlyData.length === 0) {
+                containerElement.innerHTML = '<p class="error-message">Pas de données horaires disponibles.</p>'; // Message générique
+                return;
+            }
 
-            for (let i = 0; i < 24; i++) {
-                const hour = hourlyData[i];
-                if (!hour) continue;
+            // Sort data by timestamp to ensure chronological order
+            hourlyData.sort((a, b) => a.dt - b.dt);
 
-                const rainVolume = hour.rain && hour.rain['1h'] ? hour.rain['1h'].toFixed(1) : '0';
-                const snowVolume = hour.snow && hour.snow['1h'] ? hour.snow['1h'].toFixed(1) : '0';
+            hourlyData.forEach(hour => {
+                // Ensure rain and snow volumes are numbers before calling toFixed
+                const rainVolume = hour.rain && typeof hour.rain['1h'] === 'number' ? hour.rain['1h'].toFixed(1) : '0';
+                const snowVolume = hour.snow && typeof hour.snow['1h'] === 'number' ? hour.snow['1h'].toFixed(1) : '0';
                 
                 let precipitationInfo = '';
                 if (parseFloat(rainVolume) > 0) {
@@ -825,7 +969,6 @@
                     precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
                 }
 
-                // Vérifie si cette heure est concernée par une alerte
                 const alertIconHtml = isPeriodAffectedByAlert(hour.dt) ? 
                     `<a href="#weather-alerts-section" class="alert-icon" title="Voir l'alerte météo">⚠️</a>` : '';
 
@@ -840,21 +983,25 @@
                         ${precipitationInfo}
                     </div>
                 `;
-                hourlyContainer.innerHTML += card;
-            }
+                containerElement.innerHTML += card;
+            });
         }
 
-        // Fonction pour afficher les prévisions des jours J+1 à J+7
         function displayDailyForecast(dailyData) {
             const dailyContainer = document.getElementById('daily-forecast');
             dailyContainer.innerHTML = '';
+            if (!dailyData || dailyData.length === 0) {
+                dailyContainer.innerHTML = '<p class="error-message">Pas de prévisions journalières disponibles.</p>';
+                return;
+            }
 
             for (let i = 0; i < 7 && i < dailyData.length; i++) {
                 const day = dailyData[i];
                 if (!day) continue;
 
-                const rainVolume = day.rain ? day.rain.toFixed(1) : '0';
-                const snowVolume = day.snow ? day.snow.toFixed(1) : '0';
+                // Ensure rain and snow volumes are numbers before calling toFixed
+                const rainVolume = typeof day.rain === 'number' ? day.rain.toFixed(1) : '0';
+                const snowVolume = typeof day.snow === 'number' ? day.snow.toFixed(1) : '0';
 
                 let precipitationInfo = '';
                 if (parseFloat(rainVolume) > 0) {
@@ -864,10 +1011,6 @@
                     precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
                 }
 
-                // Vérifie si ce jour est concerné par une alerte
-                // Pour les jours, on vérifie si le début du jour est dans une alerte.
-                // Une vérification plus complexe pourrait inclure toute la journée,
-                // mais pour l'affichage d'une icône, c'est suffisant.
                 const alertIconHtml = isPeriodAffectedByAlert(day.dt) ?
                     `<a href="#weather-alerts-section" class="alert-icon" title="Voir l'alerte météo">⚠️</a>` : '';
 
@@ -888,61 +1031,221 @@
             }
         }
 
+        // --- Fonctions de gestion des données API (simulées ou réelles) ---
+
+        // Données simulées pour les appels API
+        const dummyMainData = (lat, lon, now) => ({
+            current: {
+                dt: now,
+                temp: 20 + Math.sin(now / 3600 / 24 * Math.PI) * 5,
+                feels_like: 19 + Math.sin(now / 3600 / 24 * Math.PI) * 5,
+                weather: [{ id: 800, main: "Clear", description: "ciel clair (simulé)", icon: "01d" }],
+                rain: {},
+                snow: {}
+            },
+            minutely: Array(60).fill(0).map((_, i) => ({ dt: now + i * 60, precipitation: i < 10 && i % 3 === 0 ? 0.2 + Math.random() * 0.5 : 0 })),
+            hourly: Array(24).fill(0).map((_, i) => ({
+                dt: now + (i + 1) * 3600,
+                temp: 20 + Math.sin((now + (i + 1) * 3600) / 3600 / 12 * Math.PI) * 8, // Simule cycle jour/nuit
+                feels_like: 19 + Math.sin((now + (i + 1) * 3600) / 3600 / 12 * Math.PI) * 8,
+                weather: [{ id: 800, main: "Clouds", description: "nuageux (simulé)", icon: "04d" }],
+                rain: i % 5 === 0 ? { '1h': parseFloat((0.5 + Math.random() * 2).toFixed(1)) } : {}, // Ensure number
+                snow: {},
+                pressure: 1010 + Math.random() * 10,
+                humidity: 70 + Math.random() * 20,
+                wind_speed: 5 + Math.random() * 5,
+                wind_deg: Math.floor(Math.random() * 360),
+                visibility: 10000,
+                clouds: Math.floor(Math.random() * 100),
+                uvi: (Math.random() * 5).toFixed(1)
+            })),
+            daily: Array(7).fill(0).map((_, i) => ({
+                dt: now + (i + 1) * 24 * 3600,
+                temp: { min: 15 + i + Math.random() * 2, max: 25 + i + Math.random() * 3 },
+                feels_like: { day: 20 + i + Math.random() * 2 },
+                weather: [{ id: 800, main: "Clear", description: "ensoleillé (simulé)", icon: "01d" }],
+                rain: i % 3 === 0 ? parseFloat((2 + Math.random() * 5).toFixed(1)) : 0, // Ensure number
+                snow: 0
+            })),
+            alerts: [
+                {
+                    event: "Alerte test (simulée)",
+                    sender_name: "Service Météo Simulé",
+                    start: now + 3600, // Starts in 1 hour
+                    end: now + 72000, // Ends in 20 hours
+                    description: "Ceci est une alerte météo simulée pour des tests. Aucune condition réelle.",
+                    instruction: "Restez vigilant (simulé)."
+                }
+            ]
+        });
+
+        // Données simulées pour un appel historique horaire unique
+        const dummyHistoricalSingleHourData = (lat, lon, timestamp) => ({
+            lat: lat,
+            lon: lon,
+            timezone: "Europe/Paris",
+            timezone_offset: 7200,
+            data: [
+                {
+                    dt: timestamp, // Crucial: use the requested timestamp
+                    temp: 15 + Math.random() * 10, // Random temp
+                    feels_like: 14 + Math.random() * 10,
+                    weather: [{ id: 800, main: "Clouds", description: "couvert (simulé)", icon: "04n" }],
+                    rain: Math.random() > 0.8 ? { '1h': parseFloat((Math.random() * 2).toFixed(1)) } : {}, // Ensure number
+                    snow: {},
+                    pressure: 1010 + Math.random() * 10,
+                    humidity: 70 + Math.random() * 20,
+                    wind_speed: 5 + Math.random() * 5,
+                    wind_deg: Math.floor(Math.random() * 360),
+                    visibility: 10000,
+                    clouds: Math.floor(Math.random() * 100),
+                    uvi: (Math.random() * 5).toFixed(1)
+                }
+            ]
+        });
+
+        // Fonction pour simuler un délai réseau
+        function simulateNetworkDelay(minMs = 200, maxMs = 800) {
+            return new Promise(resolve => setTimeout(resolve, Math.random() * (maxMs - minMs) + minMs));
+        }
+
+        async function getHistoricalHourlyData(lat, lon) {
+            const now = Math.floor(Date.now() / 1000);
+            const historicalHourlyData = [];
+
+            console.log("Fetching historical data for the last 24 hours...");
+
+            if (SIMULATE_API_CALLS) {
+                await simulateNetworkDelay(); // Simuler le délai réseau pour l'ensemble de la récupération
+                for (let i = 0; i < 24; i++) {
+                    const timestamp = now - ((23 - i) * 3600); // Start from 23 hours ago, up to current hour
+                    const data = dummyHistoricalSingleHourData(lat, lon, timestamp);
+                    if (data.data && data.data.length > 0 && data.data[0]) {
+                        historicalHourlyData.push(data.data[0]);
+                    }
+                }
+                console.log(`    Simulated data for 24 hours generated.`);
+            } else {
+                // Cette partie du code fera 24 appels réels
+                for (let i = 0; i < 24; i++) {
+                    const timestamp = now - ((23 - i) * 3600); // Start from 23 hours ago, up to current hour
+                    const url = `https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timestamp}&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
+                    try {
+                        console.log(`  Requesting data for: ${new Date(timestamp * 1000).toISOString()}`);
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            console.error(`    HTTP error! status: ${response.status} for timestamp ${timestamp}. URL: ${url}`);
+                            continue; 
+                        }
+                        const data = await response.json();
+                        console.log(`    Raw response for timestamp ${timestamp}:`, data);
+
+                        if (data.data && data.data.length > 0 && data.data[0]) {
+                            historicalHourlyData.push(data.data[0]);
+                            console.log(`    Successfully processed data for ${new Date(timestamp * 1000).toISOString()}`);
+                        } else {
+                            console.warn(`    No valid data[0] found for timestamp ${timestamp}. Raw response:`, data);
+                        }
+                    } catch (error) {
+                        console.error(`    Error fetching data for timestamp ${timestamp}:`, error);
+                    }
+                }
+            }
+
+            historicalHourlyData.sort((a, b) => a.dt - b.dt);
+            console.log("Final collected historical hourly data:", historicalHourlyData);
+            return historicalHourlyData;
+        }
+
+
         // Fonction principale pour récupérer et afficher la météo
         async function updateWeatherForLocation(lat, lon, locationName) {
+            currentLat = lat; // Met à jour la latitude globale
+            currentLon = lon; // Met à jour la longitude globale
+
             currentLocationDisplay.textContent = `${locationName}`;
-            // Mettre à jour la carte
             mapIframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=10&output=embed`;
 
-            // Afficher les messages de chargement
+            // Réinitialiser les sections
             weatherAlertsContainer.innerHTML = '<p class="error-message" id="alerts-loading">Chargement des alertes météo...</p>';
             document.getElementById('minutely-forecast').innerHTML = '<p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>';
             document.getElementById('hourly-forecast').innerHTML = '<p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>';
             document.getElementById('daily-forecast').innerHTML = '<p class="error-message" id="daily-loading">Chargement des prévisions des prochains jours...</p>';
-            locationErrorMessage.textContent = ''; // Cacher les erreurs précédentes
-            citySelectionResults.innerHTML = ''; // Cacher les résultats de sélection de ville
+            
+            // Masquer les données historiques et afficher le prompt de mot de passe
+            historicalDataDisplay.style.display = 'none';
+            passwordPromptContainer.style.display = 'flex';
+            passwordInput.value = '';
+            passwordErrorMessage.textContent = '';
+            previousHourlyLoadingMessage.textContent = ''; // Clear any previous loading message
+
+            locationErrorMessage.textContent = '';
+            citySelectionResults.innerHTML = '';
             citySelectionResults.style.display = 'none';
 
-            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
-            
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP ! Statut: ${response.status}`);
+                let mainData;
+                if (SIMULATE_API_CALLS) {
+                    await simulateNetworkDelay(); // Simuler le délai réseau
+                    mainData = dummyMainData(lat, lon, Math.floor(Date.now() / 1000));
+                    console.log("Simulated Main API Data:", mainData);
+                } else {
+                    const mainUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
+                    const mainResponse = await fetch(mainUrl);
+                    if (!mainResponse.ok) {
+                        throw new Error(`Erreur HTTP ! Statut: ${mainResponse.status} pour les données principales`);
+                    }
+                    mainData = await mainResponse.json();
+                    console.log("Main API Data (current, forecast, alerts):", mainData);
                 }
-                const data = await response.json();
-                console.log(data);
 
                 // Stocke les alertes globalement
-                globalAlerts = data.alerts || [];
+                globalAlerts = mainData.alerts || [];
 
                 // Appliquer le thème basé sur la météo actuelle
-                if (data.current && data.current.weather && data.current.weather.length > 0) {
-                    const currentIconCode = data.current.weather[0].icon;
+                if (mainData.current && mainData.current.weather && mainData.current.weather.length > 0) {
+                    const currentIconCode = mainData.current.weather[0].icon;
                     const themeClassName = getThemeClass(currentIconCode);
                     applyTheme(themeClassName);
                 } else {
-                    // Fallback au thème ensoleillé si pas de données actuelles
-                    applyTheme("theme-sunny");
+                    applyTheme("theme-sunny"); // Fallback
                 }
 
-                displayAlerts(globalAlerts); // Passer les alertes stockées
-                displayMinutelyForecast(data.minutely); 
-                displayHourlyForecast(data.hourly);
-                displayDailyForecast(data.daily);
+                // Afficher les sections
+                displayAlerts(globalAlerts);
+                displayMinutelyForecast(mainData.minutely); 
+                displayHourlyForecast(mainData.hourly, document.getElementById('hourly-forecast')); // Futures 24h
+                displayDailyForecast(mainData.daily);
+                
             } catch (error) {
-                console.error('Problème pour récupérer les données météo :', error);
+                console.error('Problème pour récupérer les données météo principales :', error);
+                // Afficher les messages d'erreur pour toutes les sections
+                weatherAlertsContainer.innerHTML = '<p class="error-message">Impossible de charger les alertes météo.</p>';
                 document.getElementById('minutely-forecast').innerHTML = '<p class="error-message">Impossible de charger la frise de pluie. Vérifie la connexion ou la clé API.</p>';
                 document.getElementById('hourly-forecast').innerHTML = '<p class="error-message">Oh non ! Je n\'arrive pas à trouver la météo pour le moment. Demande à un adulte de vérifier ma connexion Internet ou ma clé météo !</p>';
-                document.getElementById('daily-forecast').innerHTML = '';
+                document.getElementById('daily-forecast').innerHTML = '<p class="error-message">Impossible de charger les prévisions des prochains jours.</p>';
                 currentLocationDisplay.textContent = `Météo pour ${locationName} (Erreur)`;
-                weatherAlertsContainer.innerHTML = '<p class="error-message">Impossible de charger les alertes météo.</p>';
                 applyTheme("theme-cloudy"); // Applique un thème neutre en cas d'erreur
             }
+            
+            // Re-initialiser les accordéons après le chargement du contenu
+            setupCollapsibles();
+            // Déplier les sections par default après le chargement initial
+            expandSection('minutely-forecast-content');
+            expandSection('hourly-forecast-content');
         }
 
         // Fonction pour obtenir le nom de la ville à partir des coordonnées (géocodage inverse)
         async function getCityNameFromCoordinates(lat, lon) {
+            // Cette fonction peut toujours faire un VRAI appel API car elle est moins fréquente
+            // et n'est pas la principale consommatrice de quota.
+            // Si tu souhaites aussi la simuler, il faudra ajouter une logique similaire.
+            if (SIMULATE_API_CALLS) {
+                await simulateNetworkDelay();
+                // Retourne un nom de ville simulé
+                return `Ville simulée (${lat.toFixed(2)}, ${lon.toFixed(2)})`;
+            }
+
             const reverseGeocodingUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
             try {
                 const response = await fetch(reverseGeocodingUrl);
@@ -956,7 +1259,7 @@
             return null;
         }
 
-        // --- Gestion des événements des boutons ---
+        // --- Fonctions de gestion des événements des boutons ---
 
         btnLocateMe.addEventListener('click', () => {
             currentLocationDisplay.textContent = "Recherche de ta position...";
@@ -1029,48 +1332,59 @@
             citySelectionResults.innerHTML = '';
             citySelectionResults.style.display = 'none';
 
-            const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${API_KEY}`;
-
-            try {
+            let geoData;
+            if (SIMULATE_API_CALLS) {
+                await simulateNetworkDelay();
+                // Simule une réponse de géocodage
+                geoData = [
+                    { name: cityName, lat: DEFAULT_LAT + Math.random(), lon: DEFAULT_LON + Math.random(), country: "FR", state: "Simulé" },
+                    { name: cityName + " (Autre)", lat: DEFAULT_LAT + Math.random() + 1, lon: DEFAULT_LON + Math.random() + 1, country: "FR", state: "Simulé" }
+                ];
+                if (cityName.toLowerCase() === "paris") { // Un cas spécifique pour Paris
+                    geoData = [{ name: "Paris", lat: 48.8566, lon: 2.3522, country: "FR" }];
+                } else if (cityName.toLowerCase() === "lyon") {
+                    geoData = [{ name: "Lyon", lat: 45.7640, lon: 4.8357, country: "FR" }];
+                } else if (Math.random() < 0.3) { // Simule aucun résultat parfois
+                    geoData = [];
+                }
+            } else {
+                const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${API_KEY}`;
                 const response = await fetch(geocodingUrl);
                 if (!response.ok) {
                     throw new Error(`Erreur HTTP lors de la recherche de la ville ! Statut: ${response.status}`);
                 }
-                const data = await response.json();
+                geoData = await response.json();
+            }
 
-                if (data.length > 1) {
-                    locationErrorMessage.textContent = 'Plusieurs villes trouvées. Choisis celle que tu veux :';
-                    citySelectionResults.style.display = 'flex';
+            if (geoData.length > 1) {
+                locationErrorMessage.textContent = 'Plusieurs villes trouvées. Choisis celle que tu veux :';
+                citySelectionResults.style.display = 'flex';
 
-                    data.forEach(city => {
-                        const optionText = `${city.name}` + 
-                                           (city.state ? `, ${city.state}` : '') + 
-                                           (city.country ? `, ${city.country}` : '');
-                        
-                        const cityButton = document.createElement('button');
-                        cityButton.className = 'city-option-button';
-                        cityButton.textContent = optionText;
-                        cityButton.addEventListener('click', () => {
-                            updateWeatherForLocation(city.lat, city.lon, optionText);
-                            locationInputSection.style.display = 'none';
-                        });
-                        citySelectionResults.appendChild(cityButton);
+                geoData.forEach(city => {
+                    const optionText = `${city.name}` + 
+                                       (city.state ? `, ${city.state}` : '') + 
+                                       (city.country ? `, ${city.country}` : '');
+                    
+                    const cityButton = document.createElement('button');
+                    cityButton.className = 'city-option-button';
+                    cityButton.textContent = optionText;
+                    cityButton.addEventListener('click', () => {
+                        updateWeatherForLocation(city.lat, city.lon, optionText);
+                        locationInputSection.style.display = 'none';
                     });
+                    citySelectionResults.appendChild(cityButton);
+                });
 
-                } else if (data.length === 1) {
-                    const lat = data[0].lat;
-                    const lon = data[0].lon;
-                    const foundCityName = data[0].name + 
-                                          (data[0].state ? `, ${data[0].state}` : '') + 
-                                          (data[0].country ? `, ${data[0].country}` : '');
-                    updateWeatherForLocation(lat, lon, foundCityName);
-                    locationInputSection.style.display = 'none';
-                } else {
-                    locationErrorMessage.textContent = `Désolé, je n'ai pas trouvé la ville "${cityName}". Essaie encore !`;
-                }
-            } catch (error) {
-                console.error('Problème lors de la recherche de la ville :', error);
-                locationErrorMessage.textContent = 'Une erreur est survenue lors de la recherche de la ville.';
+            } else if (geoData.length === 1) {
+                const lat = geoData[0].lat;
+                const lon = geoData[0].lon;
+                const foundCityName = geoData[0].name + 
+                                      (geoData[0].state ? `, ${geoData[0].state}` : '') + 
+                                      (geoData[0].country ? `, ${geoData[0].country}` : '');
+                updateWeatherForLocation(lat, lon, foundCityName);
+                locationInputSection.style.display = 'none';
+            } else {
+                locationErrorMessage.textContent = `Désolé, je n'ai pas trouvé la ville "${cityName}". Essaie encore !`;
             }
         });
 
@@ -1081,8 +1395,119 @@
             citySelectionResults.style.display = 'none';
         });
 
+        // --- Fonctions pour les sections dépliables ---
+        function setupCollapsibles() {
+            document.querySelectorAll('.collapsible-toggle').forEach(toggle => {
+                // Remove existing listeners to prevent duplicates on re-render
+                toggle.removeEventListener('click', handleCollapsibleToggle);
+                toggle.addEventListener('click', handleCollapsibleToggle);
+            });
+        }
+
+        async function handleCollapsibleToggle(event) {
+            const toggle = event.currentTarget;
+            const targetId = toggle.dataset.target;
+            const content = document.getElementById(targetId);
+            const icon = toggle.querySelector('.toggle-icon');
+
+            if (content.style.maxHeight && content.style.maxHeight !== "0px") {
+                // Section is currently expanded, collapse it
+                content.style.maxHeight = "0px";
+                icon.textContent = '▼';
+                toggle.classList.remove('expanded');
+                content.classList.remove('expanded');
+            } else {
+                // Section is currently collapsed, expand it
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.textContent = '▲';
+                toggle.classList.add('expanded');
+                content.classList.add('expanded');
+
+                // Special handling for the historical data section
+                if (targetId === 'previous-hourly-forecast-content') {
+                    // Check if data is already loaded and visible
+                    if (historicalDataDisplay.style.display === 'none' || historicalDataDisplay.innerHTML === '') {
+                        // If not loaded, ensure password prompt is visible
+                        passwordPromptContainer.style.display = 'flex';
+                        historicalDataDisplay.style.display = 'none';
+                        passwordInput.value = ''; // Clear password field
+                        passwordErrorMessage.textContent = ''; // Clear error message
+                    } else {
+                        // If data is already loaded, hide password prompt
+                        passwordPromptContainer.style.display = 'none';
+                        historicalDataDisplay.style.display = 'grid'; // Assuming it's a grid layout
+                    }
+                }
+            }
+        }
+
+        function expandSection(id) {
+            const content = document.getElementById(id);
+            const toggle = content.previousElementSibling;
+            const icon = toggle.querySelector('.toggle-icon');
+
+            content.style.maxHeight = content.scrollHeight + "px";
+            icon.textContent = '▲';
+            toggle.classList.add('expanded');
+            content.classList.add('expanded');
+        }
+
+        function collapseSection(id) {
+            const content = document.getElementById(id);
+            const toggle = content.previousElementSibling;
+            const icon = toggle.querySelector('.toggle-icon');
+
+            content.style.maxHeight = "0px";
+            icon.textContent = '▼';
+            toggle.classList.remove('expanded');
+            content.classList.remove('expanded');
+        }
+
+        // --- Gestion du mot de passe pour les données historiques ---
+        btnUnlockHistory.addEventListener('click', async () => {
+            const password = passwordInput.value;
+            const correctPassword = "admin"; // Le mot de passe requis
+
+            if (password === correctPassword) {
+                passwordErrorMessage.textContent = '';
+                passwordPromptContainer.style.display = 'none'; // Hide password prompt
+                historicalDataDisplay.style.display = 'grid'; // Show historical data container
+                previousHourlyLoadingMessage.textContent = 'Chargement des données historiques...'; // Show loading message
+
+                try {
+                    const historicalHourlyData = await getHistoricalHourlyData(currentLat, currentLon);
+                    if (historicalHourlyData.length > 0) {
+                        displayHourlyForecast(historicalHourlyData, historicalDataDisplay);
+                    } else {
+                        historicalDataDisplay.innerHTML = '<p class="error-message">Données historiques des 24h précédentes non disponibles pour cette localisation ou période.</p>';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors du chargement des données historiques :', error);
+                    historicalDataDisplay.innerHTML = '<p class="error-message">Impossible de charger les données historiques. Problème de connexion ou données non disponibles.</p>';
+                }
+            } else {
+                passwordErrorMessage.textContent = 'Mot de passe incorrect. Essaie encore !';
+            }
+        });
+
+
+        // Initialisation au chargement du DOM
         document.addEventListener('DOMContentLoaded', () => {
             updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+            
+            // Initialiser les états des accordéons par défaut (pliés/dépliés)
+            // Ceux avec 'expanded' dans le HTML sont déjà visuellement dépliés,
+            // mais nous devons définir leur maxHeight via JS pour la transition.
+            // Les autres sont par défaut repliés par CSS.
+            setTimeout(() => { // Petite temporisation pour s'assurer que le contenu est rendu
+                document.querySelectorAll('.collapsible-content.expanded').forEach(content => {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                });
+            }, 100); // Ajuste cette valeur si nécessaire
+
+            // Masquer le contenu historique au démarrage et afficher le prompt
+            historicalDataDisplay.style.display = 'none';
+            passwordPromptContainer.style.display = 'flex';
         });
     </script>
 </body>
