@@ -956,7 +956,7 @@
             // Sort data by timestamp to ensure chronological order
             hourlyData.sort((a, b) => a.dt - b.dt);
 
-            hourlyData.forEach(hour => {
+            hourlyData.slice(0, 24).forEach(hour => {
                 // Ensure rain and snow volumes are numbers before calling toFixed
                 const rainVolume = hour.rain && typeof hour.rain['1h'] === 'number' ? hour.rain['1h'].toFixed(1) : '0';
                 const snowVolume = hour.snow && typeof hour.snow['1h'] === 'number' ? hour.snow['1h'].toFixed(1) : '0';
@@ -1478,6 +1478,7 @@
                     const historicalHourlyData = await getHistoricalHourlyData(currentLat, currentLon);
                     if (historicalHourlyData.length > 0) {
                         displayHourlyForecast(historicalHourlyData, historicalDataDisplay);
+			expandSection('previous-hourly-forecast-content');
                     } else {
                         historicalDataDisplay.innerHTML = '<p class="error-message">Données historiques des 24h précédentes non disponibles pour cette localisation ou période.</p>';
                     }
