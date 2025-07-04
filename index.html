@@ -266,6 +266,7 @@
             justify-content: center;
             min-height: 80px;
             box-sizing: border-box;
+            position: relative; /* Pour positionner l'icône d'alerte */
         }
         /* Style pour les emojis météo */
         .weather-emoji {
@@ -342,6 +343,7 @@
             justify-content: center;
             min-height: 100px;
             box-sizing: border-box;
+            position: relative; /* Pour positionner l'icône d'alerte */
         }
         /* Style pour les emojis météo dans les cartes journalières */
         .day-card .weather-emoji {
@@ -381,6 +383,71 @@
             padding: 10px;
         }
         
+        /* Styles pour les alertes */
+        #weather-alerts-section { /* Nouveau conteneur pour la section d'alertes */
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 15px;
+            background-color: #ffffff; /* Fond blanc pour la section */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #weather-alerts-section .section-title { /* Style pour le titre des alertes */
+            margin-top: 0; /* Pas de marge en haut pour le titre de la section */
+        }
+
+        .alert-item {
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            border-left: 5px solid; /* Bordure colorée pour la gravité */
+            background-color: var(--card-bg); /* Utilise la couleur de carte du thème */
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-item h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .alert-item p {
+            margin: 0 0 5px 0;
+        }
+
+        /* Couleurs des alertes selon la gravité */
+        .alert-minor { border-left-color: #4CAF50; } /* Vert */
+        .alert-moderate { border-left-color: #FFC107; } /* Jaune */
+        .alert-severe { border-left-color: #F44336; } /* Rouge */
+        .alert-extreme { border-left-color: #D32F2F; } /* Rouge foncé */
+        .alert-unknown { border-left-color: #9E9E9E; } /* Gris */
+
+        /* Style pour l'icône d'alerte sur les cartes */
+        .alert-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1.5em; /* Taille de l'emoji alerte */
+            cursor: pointer;
+            text-decoration: none; /* Enlève le soulignement du lien */
+            color: inherit; /* Hérite la couleur du texte parent */
+            transition: transform 0.2s ease;
+        }
+        .alert-icon:hover {
+            transform: scale(1.2);
+        }
+
+
         /* Media queries pour les écrans plus grands (desktop) */
         @media (min-width: 768px) {
             body {
@@ -510,6 +577,15 @@
         </div>
     </div>
 
+    <!-- Section pour les alertes météo, placée tout en bas -->
+    <div id="weather-alerts-section" class="container">
+        <h2 class="section-title">Alertes Météo ! ⚠️</h2>
+        <div id="weather-alerts">
+            <p class="error-message" id="alerts-loading">Chargement des alertes météo...</p>
+            <!-- Les alertes seront ajoutées ici par JavaScript -->
+        </div>
+    </div>
+
     <script>
         const API_KEY = '51aebd101995305de8a90d128247bdad'; // Ta clé API OpenWeatherMap
         const DEFAULT_LAT = 45.7167; // Latitude de Charvieu-Chavagneux
@@ -530,6 +606,10 @@
         const locationErrorMessage = document.getElementById('location-error-message');
         const citySelectionResults = document.getElementById('city-selection-results');
         const mapIframe = document.getElementById('map-iframe');
+        const weatherAlertsContainer = document.getElementById('weather-alerts');
+
+        // Variable globale pour stocker les alertes
+        let globalAlerts = [];
 
         // Fonction pour obtenir les icônes météo (maintenant des emojis)
         function getWeatherIcon(iconCode) {
@@ -603,55 +683,58 @@
             return date.toLocaleDateString('fr-FR', options);
         }
 
-        // Fonction principale pour récupérer et afficher la météo
-        async function updateWeatherForLocation(lat, lon, locationName) {
-            currentLocationDisplay.textContent = `${locationName}`;
-            // Mettre à jour la carte
-            mapIframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=10&output=embed`;
-
-            // Afficher les messages de chargement
-            document.getElementById('minutely-forecast').innerHTML = '<p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>';
-            document.getElementById('hourly-forecast').innerHTML = '<p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>';
-            document.getElementById('daily-forecast').innerHTML = '<p class="error-message" id="daily-loading">Chargement des prévisions des prochains jours...</p>';
-            locationErrorMessage.textContent = ''; // Cacher les erreurs précédentes
-            citySelectionResults.innerHTML = ''; // Cacher les résultats de sélection de ville
-            citySelectionResults.style.display = 'none';
-
-            // Modifier l'URL pour inclure les données "current" pour le thème
-            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=alerts&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
-            
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP ! Statut: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log(data);
-
-                // Appliquer le thème basé sur la météo actuelle
-                if (data.current && data.current.weather && data.current.weather.length > 0) {
-                    const currentIconCode = data.current.weather[0].icon;
-                    const themeClassName = getThemeClass(currentIconCode);
-                    applyTheme(themeClassName);
-                } else {
-                    // Fallback au thème ensoleillé si pas de données actuelles
-                    applyTheme("theme-sunny");
-                }
-
-                displayMinutelyForecast(data.minutely); 
-                displayHourlyForecast(data.hourly);
-                displayDailyForecast(data.daily);
-            } catch (error) {
-                console.error('Problème pour récupérer les données météo :', error);
-                document.getElementById('minutely-forecast').innerHTML = '<p class="error-message">Impossible de charger la frise de pluie. Vérifie la connexion ou la clé API.</p>';
-                document.getElementById('hourly-forecast').innerHTML = '<p class="error-message">Oh non ! Je n\'arrive pas à trouver la météo pour le moment. Demande à un adulte de vérifier ma connexion Internet ou ma clé météo !</p>';
-                document.getElementById('daily-forecast').innerHTML = '';
-                currentLocationDisplay.textContent = `Météo pour ${locationName} (Erreur)`;
-                applyTheme("theme-cloudy"); // Applique un thème neutre en cas d'erreur
-            }
+        // Fonction pour formater la date et l'heure complètes
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('fr-FR', options);
         }
 
-        // --- Afficher la frise de pluie minute par minute ---
+        // Fonction pour vérifier si une période est couverte par une alerte
+        function isPeriodAffectedByAlert(timestamp) {
+            const timeMs = timestamp * 1000;
+            for (const alert of globalAlerts) {
+                const alertStartMs = alert.start * 1000;
+                const alertEndMs = alert.end * 1000;
+                // Vérifie si le timestamp de la prévision est dans la période de l'alerte
+                if (timeMs >= alertStartMs && timeMs <= alertEndMs) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Fonction pour afficher les alertes météo
+        function displayAlerts(alertsData) {
+            weatherAlertsContainer.innerHTML = ''; // Vide le conteneur des alertes
+
+            if (!alertsData || alertsData.length === 0) {
+                weatherAlertsContainer.innerHTML = '<p>Aucune alerte météo active pour le moment. Tout va bien ! 😊</p>';
+                return;
+            }
+
+            alertsData.forEach(alert => {
+                const alertDiv = document.createElement('div');
+                const severityClass = `alert-${alert.severity ? alert.severity.toLowerCase() : 'unknown'}`;
+                alertDiv.className = `alert-item ${severityClass}`;
+
+                const startDate = formatDateTime(alert.start);
+                const endDate = formatDateTime(alert.end);
+
+                alertDiv.innerHTML = `
+                    <h3>${alert.event}</h3>
+                    <p><strong>De :</strong> ${alert.sender_name || 'Inconnu'}</p>
+                    <p><strong>Début :</strong> ${startDate}</p>
+                    <p><strong>Fin :</strong> ${endDate}</p>
+                    <p><strong>Description :</strong> ${alert.description || 'Pas de description disponible.'}</p>
+                    ${alert.instruction ? `<p><strong>Instructions :</strong> ${alert.instruction}</p>` : ''}
+                `;
+                weatherAlertsContainer.appendChild(alertDiv);
+            });
+        }
+
+
+        // Fonction pour afficher la frise de pluie minute par minute
         function displayMinutelyForecast(minutelyData) {
             const minutelyContainer = document.getElementById('minutely-forecast');
             minutelyContainer.innerHTML = '';
@@ -722,7 +805,7 @@
         }
 
 
-        // --- Afficher la météo heure par heure (les 24h à venir) ---
+        // Fonction pour afficher la météo heure par heure (les 24h à venir)
         function displayHourlyForecast(hourlyData) {
             const hourlyContainer = document.getElementById('hourly-forecast');
             hourlyContainer.innerHTML = '';
@@ -742,8 +825,13 @@
                     precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
                 }
 
+                // Vérifie si cette heure est concernée par une alerte
+                const alertIconHtml = isPeriodAffectedByAlert(hour.dt) ? 
+                    `<a href="#weather-alerts-section" class="alert-icon" title="Voir l'alerte météo">⚠️</a>` : '';
+
                 const card = `
                     <div class="weather-card">
+                        ${alertIconHtml}
                         <p class="time">${formatTime(hour.dt)}</p>
                         <span class="weather-emoji">${getWeatherIcon(hour.weather[0].icon)}</span>
                         <p class="temp">${Math.round(hour.temp)}°C</p>
@@ -756,7 +844,7 @@
             }
         }
 
-        // --- Afficher les prévisions des jours J+1 à J+7 ---
+        // Fonction pour afficher les prévisions des jours J+1 à J+7
         function displayDailyForecast(dailyData) {
             const dailyContainer = document.getElementById('daily-forecast');
             dailyContainer.innerHTML = '';
@@ -776,8 +864,16 @@
                     precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
                 }
 
+                // Vérifie si ce jour est concerné par une alerte
+                // Pour les jours, on vérifie si le début du jour est dans une alerte.
+                // Une vérification plus complexe pourrait inclure toute la journée,
+                // mais pour l'affichage d'une icône, c'est suffisant.
+                const alertIconHtml = isPeriodAffectedByAlert(day.dt) ?
+                    `<a href="#weather-alerts-section" class="alert-icon" title="Voir l'alerte météo">⚠️</a>` : '';
+
                 const card = `
                     <div class="day-card">
+                        ${alertIconHtml}
                         <p class="date">${formatDate(day.dt)}</p>
                         <span class="weather-emoji">${getWeatherIcon(day.weather[0].icon)}</span>
                         <p class="temp-range">
@@ -790,6 +886,74 @@
                 `;
                 dailyContainer.innerHTML += card;
             }
+        }
+
+        // Fonction principale pour récupérer et afficher la météo
+        async function updateWeatherForLocation(lat, lon, locationName) {
+            currentLocationDisplay.textContent = `${locationName}`;
+            // Mettre à jour la carte
+            mapIframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=10&output=embed`;
+
+            // Afficher les messages de chargement
+            weatherAlertsContainer.innerHTML = '<p class="error-message" id="alerts-loading">Chargement des alertes météo...</p>';
+            document.getElementById('minutely-forecast').innerHTML = '<p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>';
+            document.getElementById('hourly-forecast').innerHTML = '<p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>';
+            document.getElementById('daily-forecast').innerHTML = '<p class="error-message" id="daily-loading">Chargement des prévisions des prochains jours...</p>';
+            locationErrorMessage.textContent = ''; // Cacher les erreurs précédentes
+            citySelectionResults.innerHTML = ''; // Cacher les résultats de sélection de ville
+            citySelectionResults.style.display = 'none';
+
+            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ! Statut: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(data);
+
+                // Stocke les alertes globalement
+                globalAlerts = data.alerts || [];
+
+                // Appliquer le thème basé sur la météo actuelle
+                if (data.current && data.current.weather && data.current.weather.length > 0) {
+                    const currentIconCode = data.current.weather[0].icon;
+                    const themeClassName = getThemeClass(currentIconCode);
+                    applyTheme(themeClassName);
+                } else {
+                    // Fallback au thème ensoleillé si pas de données actuelles
+                    applyTheme("theme-sunny");
+                }
+
+                displayAlerts(globalAlerts); // Passer les alertes stockées
+                displayMinutelyForecast(data.minutely); 
+                displayHourlyForecast(data.hourly);
+                displayDailyForecast(data.daily);
+            } catch (error) {
+                console.error('Problème pour récupérer les données météo :', error);
+                document.getElementById('minutely-forecast').innerHTML = '<p class="error-message">Impossible de charger la frise de pluie. Vérifie la connexion ou la clé API.</p>';
+                document.getElementById('hourly-forecast').innerHTML = '<p class="error-message">Oh non ! Je n\'arrive pas à trouver la météo pour le moment. Demande à un adulte de vérifier ma connexion Internet ou ma clé météo !</p>';
+                document.getElementById('daily-forecast').innerHTML = '';
+                currentLocationDisplay.textContent = `Météo pour ${locationName} (Erreur)`;
+                weatherAlertsContainer.innerHTML = '<p class="error-message">Impossible de charger les alertes météo.</p>';
+                applyTheme("theme-cloudy"); // Applique un thème neutre en cas d'erreur
+            }
+        }
+
+        // Fonction pour obtenir le nom de la ville à partir des coordonnées (géocodage inverse)
+        async function getCityNameFromCoordinates(lat, lon) {
+            const reverseGeocodingUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
+            try {
+                const response = await fetch(reverseGeocodingUrl);
+                const data = await response.json();
+                if (data.length > 0) {
+                    return data[0].name + (data[0].state ? `, ${data[0].state}` : '') + (data[0].country ? `, ${data[0].country}` : '');
+                }
+            } catch (error) {
+                console.error('Erreur lors du géocodage inverse :', error);
+            }
+            return null;
         }
 
         // --- Gestion des événements des boutons ---
@@ -837,20 +1001,6 @@
                 updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
             }
         });
-
-        async function getCityNameFromCoordinates(lat, lon) {
-            const reverseGeocodingUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
-            try {
-                const response = await fetch(reverseGeocodingUrl);
-                const data = await response.json();
-                if (data.length > 0) {
-                    return data[0].name + (data[0].state ? `, ${data[0].state}` : '') + (data[0].country ? `, ${data[0].country}` : '');
-                }
-            } catch (error) {
-                console.error('Erreur lors du géocodage inverse :', error);
-            }
-            return null;
-        }
 
         btnChooseLocation.addEventListener('click', () => {
             if (locationInputSection.style.display === 'flex') {
