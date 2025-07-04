@@ -197,16 +197,18 @@
             border-right: none;
         }
         .timeline-labels {
-            display: flex;
-            width: 100%;
-            justify-content: space-between;
+            position: relative; /* Parent pour le positionnement absolu des labels */
+            width: 100%; /* Prend toute la largeur disponible */
+            height: auto; /* Hauteur ajustée au contenu */
             font-size: 0.65em;
             color: #555;
-            padding: 0 2px;
+            /* padding: 0 2px; -- Supprimé pour un alignement précis avec la timeline */
         }
         .timeline-label {
-            position: relative;
-            transform: translateX(-50%);
+            position: absolute; /* Positionnement absolu */
+            top: 0; /* Aligné en haut du conteneur des labels */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            /* Les propriétés flex et width sont maintenant gérées par le JS via 'left' et 'transform' */
         }
 
         /* Styles pour les prévisions journalières (daily) */
@@ -582,13 +584,30 @@
 
             const labelsDiv = document.createElement('div');
             labelsDiv.className = 'timeline-labels';
+            // Supprime le padding horizontal du conteneur des labels pour un alignement précis
+            // labelsDiv.style.padding = '0'; // Non nécessaire si retiré du CSS
+
             const now = new Date();
 
             for (let i = 0; i <= 60; i += 10) {
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'timeline-label';
-                labelSpan.style.flex = (i === 0 || i === 60) ? 'none' : '1';
-                labelSpan.style.width = (i === 0 || i === 60) ? 'auto' : 'calc(100% / 6)';
+                
+                // Calcule la position en pourcentage de la largeur de la timeline
+                const positionPercentage = (i / 60) * 100;
+                labelSpan.style.left = `${positionPercentage}%`;
+
+                // Ajuste la transformation pour aligner le texte correctement au marqueur
+                if (i === 0) {
+                    labelSpan.style.transform = 'translateX(0%)'; // Aligne le bord gauche du texte avec le marqueur 0%
+                    labelSpan.style.textAlign = 'left'; // Assure que le texte est aligné à gauche dans sa propre boîte
+                } else if (i === 60) {
+                    labelSpan.style.transform = 'translateX(-100%)'; // Aligne le bord droit du texte avec le marqueur 100%
+                    labelSpan.style.textAlign = 'right'; // Assure que le texte est aligné à droite dans sa propre boîte
+                } else {
+                    labelSpan.style.transform = 'translateX(-50%)'; // Centre le texte sur son marqueur
+                    labelSpan.style.textAlign = 'center'; // Assure que le texte est centré dans sa propre boîte
+                }
 
                 const futureTime = new Date(now.getTime() + i * 60 * 1000);
                 const hours = futureTime.getHours().toString().padStart(2, '0');
@@ -691,17 +710,23 @@
                     },
                     (error) => {
                         console.error('Erreur de géolocalisation :', error);
-                        let errorMessage = 'Impossible de trouver ta position. ';
+                        let errorMessage = 'Impossible de trouver ta position.';
                         if (error.code === error.PERMISSION_DENIED) {
-                            errorMessage += 'Tu as refusé l\'accès à la géolocalisation.';
+                            errorMessage += '<br>Vérifie les réglages de localisation de ton navigateur ou de ton téléphone (autorise l\'accès à la géolocalisation pour cette page).';
+                            errorMessage += '<br>Assure-toi aussi que la page est ouverte via HTTPS (adresse qui commence par "https://").';
                         } else if (error.code === error.POSITION_UNAVAILABLE) {
-                            errorMessage += 'La position n\'est pas disponible.';
+                            errorMessage += '<br>La position n\'est pas disponible.';
                         } else if (error.code === error.TIMEOUT) {
-                            errorMessage += 'Le temps de recherche de la position est écoulé.';
+                            errorMessage += '<br>Le temps de recherche de la position est écoulé.';
                         }
-                        locationErrorMessage.textContent = errorMessage;
+                        locationErrorMessage.innerHTML = errorMessage;
                         currentLocationDisplay.textContent = "Position inconnue";
                         updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
                     }
                 );
             } else {
