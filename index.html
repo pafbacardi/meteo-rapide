@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Météo rapide !</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #e0f7fa; /* Bleu clair */
+            color: #333;
+            text-align: center;
+            margin: 10px; /* Marges réduites pour mobile */
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+        }
+        /* Nouvelle section pour l'en-tête principal */
+        .main-header-section {
+            display: flex;
+            flex-direction: column; /* Par défaut, les éléments s'empilent sur mobile */
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Espacement entre les blocs */
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centré sur mobile */
+            text-align: center; /* Centré sur mobile */
+            flex-grow: 1; /* Prend l'espace disponible sur desktop */
+        }
+        h1 {
+            color: #4A148C; /* Violet profond pour le titre */
+            font-size: 1.8em; /* Plus petit pour mobile */
+            margin-bottom: 5px; /* Moins d'espace */
+        }
+        #current-location-display {
+            color: #4A148C; /* Violet profond pour le nom de la ville */
+            font-size: 1.5em; /* Plus petit pour mobile */
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Boutons empilés par défaut sur mobile */
+            gap: 10px; /* Espacement entre les boutons */
+            margin-bottom: 10px;
+        }
+        .weather-button {
+            background-color: #8E24AA; /* Violet pour les boutons */
+            color: white;
+            padding: 10px 20px; /* Padding réduit pour mobile */
+            border: none;
+            border-radius: 20px; /* Rayon de bordure réduit */
+            font-size: 1em; /* Plus petit pour mobile */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .weather-button:hover {
+            background-color: #7B1FA2;
+            transform: translateY(-1px);
+        }
+        .weather-button:active {
+            background-color: #6A1B9A;
+            transform: translateY(0);
+        }
+        #btn-back-to-charvieu {
+            background-color: #FFC107; /* Jaune vif */
+            color: #333;
+        }
+        #btn-back-to-charvieu:hover {
+            background-color: #FFA000;
+        }
+        #btn-back-to-charvieu:active {
+            background-color: #FF8F00;
+        }
+
+        /* Styles pour la carte */
+        #map-container {
+            width: 150px; /* Largeur fixe pour la carte sur mobile */
+            height: 150px; /* Hauteur fixe pour la carte sur mobile */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 10px; /* Espacement au-dessus de la carte sur mobile */
+        }
+        #map-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            margin: 10px auto;
+        }
+        .section-title {
+            color: #6A1B9A;
+            font-size: 1.5em;
+            margin-top: 20px;
+            border-bottom: 2px solid #6A1B9A;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* Styles spécifiques pour le layout 4x6 (hourly) */
+        .hourly-forecast {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .weather-card {
+            background-color: #F3E5F5;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 0.8em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            box-sizing: border-box;
+        }
+        /* Style pour les emojis météo */
+        .weather-emoji {
+            font-size: 2.5em; /* Grande taille pour les emojis */
+            line-height: 1; /* Assure que l'emoji ne prend pas trop de hauteur */
+            margin-bottom: 2px; /* Petit espace sous l'emoji */
+        }
+        .weather-card p {
+            margin: 2px 0;
+            line-height: 1.2;
+        }
+        .weather-card .temp {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #D84315;
+        }
+        .weather-card .feels-like {
+            font-size: 0.8em;
+            color: #8D6E63;
+        }
+        .weather-card .time {
+            font-size: 0.7em;
+            color: #757575;
+        }
+        .weather-card .precipitation {
+            font-size: 0.7em;
+            color: #00838f;
+            font-weight: bold;
+        }
+
+        /* Styles pour la frise de pluie minute par minute (minutely) */
+        .minutely-forecast-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+            padding: 8px;
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+        .minutely-timeline {
+            display: flex;
+            width: 100%;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+        .minute-block {
+            flex-grow: 1;
+            height: 100%;
+            background-color: #e0f7fa;
+            transition: background-color 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+        .minute-block:last-child {
+            border-right: none;
+        }
+        .timeline-labels {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            font-size: 0.65em;
+            color: #555;
+            padding: 0 2px;
+        }
+        .timeline-label {
+            position: relative;
+            transform: translateX(-50%);
+        }
+
+        /* Styles pour les prévisions journalières (daily) */
+        .daily-forecast {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .day-card {
+            background-color: #E1F5FE;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 0.85em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+        .day-card .temp-range {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #bf360c;
+        }
+        .day-card .feels-like {
+            font-size: 0.8em;
+            color: #8D6E63;
+        }
+        .day-card .date {
+            font-size: 0.75em;
+            color: #757575;
+        }
+        /* Style pour les emojis météo dans les cartes journalières */
+        .day-card .weather-emoji {
+            font-size: 2.5em; /* Grande taille pour les emojis */
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        /* Styles pour la section de saisie de lieu (inchangés) */
+        .location-input-section {
+            background-color: #EDE7F6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .location-input-section input[type="text"] {
+            padding: 10px;
+            border: 1px solid #B39DDB;
+            border-radius: 8px;
+            font-size: 1.1em;
+            width: 80%;
+            max-width: 300px;
+        }
+        .location-input-section button {
+            background-color: #42A5F5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .location-input-section button:hover {
+            background-color: #2196F3;
+        }
+
+        /* Styles pour la liste de sélection de villes (inchangés) */
+        #city-selection-results {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            background-color: #E1F5FE;
+        }
+        .city-option-button {
+            background-color: #90CAF9;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-align: left;
+        }
+        .city-option-button:hover {
+            background-color: #64B5F6;
+        }
+
+        /* Media queries pour les écrans plus grands (desktop) */
+        @media (min-width: 768px) {
+            body {
+                margin: 20px;
+            }
+            .main-header-section {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+            }
+            .header-content-left {
+                align-items: center;
+                text-align: center;
+                flex-grow: 1;
+                padding-right: 20px;
+            }
+            h1 { font-size: 2.5em; margin-bottom: 10px; }
+            #current-location-display { font-size: 1.8em; margin-bottom: 15px; }
+
+            .button-container {
+                flex-direction: row;
+                gap: 15px;
+                margin-bottom: 0;
+            }
+            .weather-button {
+                padding: 12px 25px;
+                font-size: 1.2em;
+            }
+
+            #map-container {
+                width: 200px;
+                height: 200px;
+                margin-top: 0;
+                flex-shrink: 0;
+            }
+
+            .container { padding: 20px; }
+            .section-title { font-size: 1.8em; margin-top: 30px; }
+
+            .hourly-forecast {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+            .weather-card {
+                padding: 15px;
+                font-size: 1.1em;
+                min-height: 90px;
+            }
+            /* Ajustement pour les emojis sur desktop */
+            .weather-card .weather-emoji {
+                font-size: 3em; /* Plus grande taille pour les emojis sur desktop */
+            }
+            .weather-card p { margin: 5px 0; } /* Réinitialise les marges pour desktop */
+            .weather-card .temp { font-size: 1.4em; }
+            .weather-card .feels-like { font-size: 0.9em; }
+            .weather-card .time { font-size: 0.9em; }
+            .weather-card .precipitation { font-size: 0.9em; }
+
+            .minutely-forecast-container { padding: 10px; margin-top: 20px; }
+            .minutely-timeline { height: 40px; margin-bottom: 5px; }
+            .timeline-labels { font-size: 0.8em; }
+
+            .daily-forecast {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
+                margin-top: 20px;
+            }
+            .day-card {
+                padding: 15px;
+                font-size: 0.9em;
+                min-height: 120px;
+            }
+            /* Ajustement pour les emojis sur desktop */
+            .day-card .weather-emoji {
+                font-size: 3em; /* Plus grande taille pour les emojis sur desktop */
+            }
+            .day-card .temp-range { font-size: 1.3em; }
+            .day-card .feels-like { font-size: 0.9em; }
+            .day-card .date { font-size: 0.9em; }
+            .day-card img { width: 60px; height: 60px; } /* Cette règle ne sera plus utilisée si on utilise des spans */
+        }
+    </style>
+</head>
+<body>
+    <div class="main-header-section">
+        <div class="header-content-left">
+            <h1>Météo rapide ! ☀️☁️☔</h1>
+            <div id="current-location-display">Chargement...</div>
+            <div class="button-container">
+                <button id="btn-locate-me" class="weather-button">Météo ici ! 📍</button>
+                <button id="btn-choose-location" class="weather-button">Météo ailleurs... 🌍</button>
+                <button id="btn-back-to-charvieu" class="weather-button">Retour Charvieu-Chavagneux 🏠</button>
+            </div>
+        </div>
+        <div id="map-container">
+            <iframe id="map-iframe" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+
+    <div id="location-input-section" class="location-input-section">
+        <input type="text" id="city-input" placeholder="Tape le nom d'une ville (ex: Paris)">
+        <button id="btn-search-location">Chercher !</button>
+        <p id="location-error-message" class="error-message"></p>
+        <div id="city-selection-results">
+            <!-- Les options de ville seront ajoutées ici -->
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Nouvelle section pour la frise de pluie minute par minute -->
+        <h2 class="section-title">La pluie dans l'heure qui vient ! 💧</h2>
+        <div id="minutely-forecast" class="minutely-forecast-container">
+            <p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>
+            <!-- La frise sera ajoutée ici par JavaScript -->
+        </div>
+
+        <h2 class="section-title">Les 24h à venir ! ⏰</h2>
+        <div id="hourly-forecast" class="hourly-forecast">
+            <!-- La météo heure par heure sera ajoutée ici par JavaScript -->
+            <p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>
+        </div>
+
+        <h2 class="section-title">Les jours suivants (J+1 à J+7) ! 🗓️</h2>
+        <div id="daily-forecast" class="daily-forecast">
+            <!-- Les cartes de météo journalière seront générées ici par JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '51aebd101995305de8a90d128247bdad'; // Ta clé API OpenWeatherMap
+        const DEFAULT_LAT = 45.7167; // Latitude de Charvieu-Chavagneux
+        const DEFAULT_LON = 5.15;    // Longitude de Charvieu-Chavagneux
+        const DEFAULT_LOCATION_NAME = 'Charvieu-Chavagneux';
+        const LANG = 'fr';   // Langue des résultats
+        const UNITS = 'metric'; // Unités métriques (Celsius)
+
+        // Éléments du DOM
+        const currentLocationDisplay = document.getElementById('current-location-display');
+        const btnLocateMe = document.getElementById('btn-locate-me');
+        const btnChooseLocation = document.getElementById('btn-choose-location');
+        const btnBackToCharvieu = document.getElementById('btn-back-to-charvieu');
+        const locationInputSection = document.getElementById('location-input-section');
+        const cityInput = document.getElementById('city-input');
+        const btnSearchLocation = document.getElementById('btn-search-location');
+        const locationErrorMessage = document.getElementById('location-error-message');
+        const citySelectionResults = document.getElementById('city-selection-results');
+        const mapIframe = document.getElementById('map-iframe');
+
+        // Fonction pour obtenir les icônes météo (maintenant des emojis)
+        function getWeatherIcon(iconCode) {
+            switch(iconCode) {
+                case "01d": return "☀️"; // Soleil (jour)
+                case "01n": return "🌙"; // Soleil (nuit)
+                case "02d": return "🌤️"; // Peu nuageux (jour)
+                case "02n": return "☁️🌙"; // Peu nuageux (nuit)
+                case "03d":
+                case "03n": return "☁️"; // Nuageux
+                case "04d":
+                case "04n": return "☁️☁️"; // Très nuageux
+                case "09d":
+                case "09n": return "🌧️"; // Pluie faible
+                case "10d":
+                case "10n": return "☔"; // Pluie
+                case "11d":
+                case "11n": return "⛈️"; // Orage
+                case "13d":
+                case "13n": return "❄️"; // Neige
+                case "50d":
+                case "50n": return "🌫️"; // Brouillard
+                default: return "❓"; // Icône par défaut
+            }
+        }
+
+        // Fonction pour formater l'heure (ex: 14h00)
+        function formatTime(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}h${minutes}`;
+        }
+
+        // Fonction pour formater la date (ex: Mer. 5 juil.)
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            return date.toLocaleDateString('fr-FR', options);
+        }
+
+        // Fonction principale pour récupérer et afficher la météo
+        async function updateWeatherForLocation(lat, lon, locationName) {
+            currentLocationDisplay.textContent = `${locationName}`;
+            // Mettre à jour la carte
+            mapIframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=10&output=embed`;
+
+            // Afficher les messages de chargement
+            document.getElementById('minutely-forecast').innerHTML = '<p class="error-message" id="minutely-loading">Chargement des prévisions de pluie minute par minute...</p>';
+            document.getElementById('hourly-forecast').innerHTML = '<p class="error-message" id="hourly-loading">Chargement de la météo heure par heure...</p>';
+            document.getElementById('daily-forecast').innerHTML = '<p class="error-message" id="daily-loading">Chargement des prévisions des prochains jours...</p>';
+            locationErrorMessage.textContent = ''; // Cacher les erreurs précédentes
+            citySelectionResults.innerHTML = ''; // Cacher les résultats de sélection de ville
+            citySelectionResults.style.display = 'none';
+
+            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=current,alerts&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ! Statut: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(data);
+
+                displayMinutelyForecast(data.minutely); 
+                displayHourlyForecast(data.hourly);
+                displayDailyForecast(data.daily);
+            } catch (error) {
+                console.error('Problème pour récupérer les données météo :', error);
+                document.getElementById('minutely-forecast').innerHTML = '<p class="error-message">Impossible de charger la frise de pluie. Vérifie la connexion ou la clé API.</p>';
+                document.getElementById('hourly-forecast').innerHTML = '<p class="error-message">Oh non ! Je n\'arrive pas à trouver la météo pour le moment. Demande à un adulte de vérifier ma connexion Internet ou ma clé météo !</p>';
+                document.getElementById('daily-forecast').innerHTML = '';
+                currentLocationDisplay.textContent = `Météo pour ${locationName} (Erreur)`;
+            }
+        }
+
+        // --- Afficher la frise de pluie minute par minute ---
+        function displayMinutelyForecast(minutelyData) {
+            const minutelyContainer = document.getElementById('minutely-forecast');
+            minutelyContainer.innerHTML = '';
+
+            if (!minutelyData || minutelyData.length === 0) {
+                minutelyContainer.innerHTML = '<p class="precipitation">Pas de prévisions de pluie minute par minute disponibles pour le moment.</p>';
+                return;
+            }
+
+            const timelineDiv = document.createElement('div');
+            timelineDiv.className = 'minutely-timeline';
+            
+            for (let i = 0; i < 60; i++) {
+                const minute = minutelyData[i];
+                if (!minute) continue;
+
+                const precipitation = minute.precipitation;
+                let backgroundColor = '#e0f7fa'; 
+
+                if (precipitation > 0 && precipitation <= 0.5) {
+                    backgroundColor = '#bbdefb';
+                } else if (precipitation > 0.5 && precipitation <= 2) {
+                    backgroundColor = '#90caf9';
+                } else if (precipitation > 2 && precipitation <= 5) {
+                    backgroundColor = '#64b5f6';
+                } else if (precipitation > 5) {
+                    backgroundColor = '#42a5f5';
+                }
+
+                const minuteBlock = document.createElement('div');
+                minuteBlock.className = 'minute-block';
+                minuteBlock.style.backgroundColor = backgroundColor;
+                minuteBlock.title = `Dans ${i} min : ${precipitation.toFixed(1)} mm/h`;
+                timelineDiv.appendChild(minuteBlock);
+            }
+            minutelyContainer.appendChild(timelineDiv);
+
+            const labelsDiv = document.createElement('div');
+            labelsDiv.className = 'timeline-labels';
+            const now = new Date();
+
+            for (let i = 0; i <= 60; i += 10) {
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'timeline-label';
+                labelSpan.style.flex = (i === 0 || i === 60) ? 'none' : '1';
+                labelSpan.style.width = (i === 0 || i === 60) ? 'auto' : 'calc(100% / 6)';
+
+                const futureTime = new Date(now.getTime() + i * 60 * 1000);
+                const hours = futureTime.getHours().toString().padStart(2, '0');
+                const minutes = futureTime.getMinutes().toString().padStart(2, '0');
+                labelSpan.textContent = `${hours}h${minutes}`;
+
+                labelsDiv.appendChild(labelSpan);
+            }
+            minutelyContainer.appendChild(labelsDiv);
+        }
+
+
+        // --- Afficher la météo heure par heure (les 24h à venir) ---
+        function displayHourlyForecast(hourlyData) {
+            const hourlyContainer = document.getElementById('hourly-forecast');
+            hourlyContainer.innerHTML = '';
+
+            for (let i = 0; i < 24; i++) {
+                const hour = hourlyData[i];
+                if (!hour) continue;
+
+                const rainVolume = hour.rain && hour.rain['1h'] ? hour.rain['1h'].toFixed(1) : '0';
+                const snowVolume = hour.snow && hour.snow['1h'] ? hour.snow['1h'].toFixed(1) : '0';
+                
+                let precipitationInfo = '';
+                if (parseFloat(rainVolume) > 0) {
+                    precipitationInfo += `<p class="precipitation">Pluie: ${rainVolume} mm</p>`;
+                }
+                if (parseFloat(snowVolume) > 0) {
+                    precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
+                }
+
+                const card = `
+                    <div class="weather-card">
+                        <p class="time">${formatTime(hour.dt)}</p>
+                        <span class="weather-emoji">${getWeatherIcon(hour.weather[0].icon)}</span>
+                        <p class="temp">${Math.round(hour.temp)}°C</p>
+                        <p class="feels-like">Ressenti: ${Math.round(hour.feels_like)}°C</p>
+                        <p>${hour.weather[0].description}</p>
+                        ${precipitationInfo}
+                    </div>
+                `;
+                hourlyContainer.innerHTML += card;
+            }
+        }
+
+        // --- Afficher les prévisions des jours J+1 à J+7 ---
+        function displayDailyForecast(dailyData) {
+            const dailyContainer = document.getElementById('daily-forecast');
+            dailyContainer.innerHTML = '';
+
+            for (let i = 0; i < 7 && i < dailyData.length; i++) {
+                const day = dailyData[i];
+                if (!day) continue;
+
+                const rainVolume = day.rain ? day.rain.toFixed(1) : '0';
+                const snowVolume = day.snow ? day.snow.toFixed(1) : '0';
+
+                let precipitationInfo = '';
+                if (parseFloat(rainVolume) > 0) {
+                    precipitationInfo += `<p class="precipitation">Pluie: ${rainVolume} mm</p>`;
+                }
+                if (parseFloat(snowVolume) > 0) {
+                    precipitationInfo += `<p class="precipitation">Neige: ${snowVolume} mm</p>`;
+                }
+
+                const card = `
+                    <div class="day-card">
+                        <p class="date">${formatDate(day.dt)}</p>
+                        <span class="weather-emoji">${getWeatherIcon(day.weather[0].icon)}</span>
+                        <p class="temp-range">
+                            ${Math.round(day.temp.min)}°C à ${Math.round(day.temp.max)}°C
+                        </p>
+                        <p class="feels-like">Ressenti: ${Math.round(day.feels_like.day)}°C</p>
+                        <p>${day.weather[0].description}</p>
+                        ${precipitationInfo}
+                    </div>
+                `;
+                dailyContainer.innerHTML += card;
+            }
+        }
+
+        // --- Gestion des événements des boutons ---
+
+        btnLocateMe.addEventListener('click', () => {
+            currentLocationDisplay.textContent = "Recherche de ta position...";
+            locationErrorMessage.textContent = '';
+            locationInputSection.style.display = 'none';
+            citySelectionResults.innerHTML = '';
+            citySelectionResults.style.display = 'none';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        getCityNameFromCoordinates(lat, lon).then(locationName => {
+                            updateWeatherForLocation(lat, lon, locationName || "Ma position actuelle");
+                        });
+                    },
+                    (error) => {
+                        console.error('Erreur de géolocalisation :', error);
+                        let errorMessage = 'Impossible de trouver ta position. ';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMessage += 'Tu as refusé l\'accès à la géolocalisation.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            errorMessage += 'La position n\'est pas disponible.';
+                        } else if (error.code === error.TIMEOUT) {
+                            errorMessage += 'Le temps de recherche de la position est écoulé.';
+                        }
+                        locationErrorMessage.textContent = errorMessage;
+                        currentLocationDisplay.textContent = "Position inconnue";
+                        updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+                    }
+                );
+            } else {
+                locationErrorMessage.textContent = 'Ton navigateur ne supporte pas la géolocalisation.';
+                currentLocationDisplay.textContent = "Position inconnue";
+                updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+            }
+        });
+
+        async function getCityNameFromCoordinates(lat, lon) {
+            const reverseGeocodingUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
+            try {
+                const response = await fetch(reverseGeocodingUrl);
+                const data = await response.json();
+                if (data.length > 0) {
+                    return data[0].name + (data[0].state ? `, ${data[0].state}` : '') + (data[0].country ? `, ${data[0].country}` : '');
+                }
+            } catch (error) {
+                console.error('Erreur lors du géocodage inverse :', error);
+            }
+            return null;
+        }
+
+        btnChooseLocation.addEventListener('click', () => {
+            if (locationInputSection.style.display === 'flex') {
+                locationInputSection.style.display = 'none';
+                locationErrorMessage.textContent = '';
+                citySelectionResults.innerHTML = '';
+                citySelectionResults.style.display = 'none';
+            } else {
+                locationInputSection.style.display = 'flex';
+                cityInput.value = '';
+                cityInput.focus();
+                locationErrorMessage.textContent = '';
+                citySelectionResults.innerHTML = '';
+                citySelectionResults.style.display = 'none';
+            }
+        });
+
+        btnSearchLocation.addEventListener('click', async () => {
+            const cityName = cityInput.value.trim();
+            if (cityName === '') {
+                locationErrorMessage.textContent = 'Tape le nom d\'une ville, s\'il te plaît !';
+                return;
+            }
+
+            locationErrorMessage.textContent = 'Recherche de la ville...';
+            citySelectionResults.innerHTML = '';
+            citySelectionResults.style.display = 'none';
+
+            const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${API_KEY}`;
+
+            try {
+                const response = await fetch(geocodingUrl);
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP lors de la recherche de la ville ! Statut: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.length > 1) {
+                    locationErrorMessage.textContent = 'Plusieurs villes trouvées. Choisis celle que tu veux :';
+                    citySelectionResults.style.display = 'flex';
+
+                    data.forEach(city => {
+                        const optionText = `${city.name}` + 
+                                           (city.state ? `, ${city.state}` : '') + 
+                                           (city.country ? `, ${city.country}` : '');
+                        
+                        const cityButton = document.createElement('button');
+                        cityButton.className = 'city-option-button';
+                        cityButton.textContent = optionText;
+                        cityButton.addEventListener('click', () => {
+                            updateWeatherForLocation(city.lat, city.lon, optionText);
+                            locationInputSection.style.display = 'none';
+                        });
+                        citySelectionResults.appendChild(cityButton);
+                    });
+
+                } else if (data.length === 1) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+                    const foundCityName = data[0].name + 
+                                          (data[0].state ? `, ${data[0].state}` : '') + 
+                                          (data[0].country ? `, ${data[0].country}` : '');
+                    updateWeatherForLocation(lat, lon, foundCityName);
+                    locationInputSection.style.display = 'none';
+                } else {
+                    locationErrorMessage.textContent = `Désolé, je n'ai pas trouvé la ville "${cityName}". Essaie encore !`;
+                }
+            } catch (error) {
+                console.error('Problème lors de la recherche de la ville :', error);
+                locationErrorMessage.textContent = 'Une erreur est survenue lors de la recherche de la ville.';
+            }
+        });
+
+        btnBackToCharvieu.addEventListener('click', () => {
+            updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+            locationInputSection.style.display = 'none';
+            citySelectionResults.innerHTML = '';
+            citySelectionResults.style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+        });
+    </script>
+</body>
+</html>
