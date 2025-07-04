@@ -5,14 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Météo rapide !</title>
     <style>
+        /* Variables CSS par défaut (pour le thème initial/fallback) */
         body {
+            --main-bg: #e0f7fa;
+            --main-text: #333;
+            --header-text: #4A148C;
+            --section-text: #6A1B9A;
+            --card-bg: #F3E5F5;
+            --button-bg: #8E24AA;
+            --button-text: white;
+            --input-border: #B39DDB;
+            --select-bg: #f3e5f5;
+            --select-text: #4A148C;
+            --city-option-bg: #90CAF9;
+            --temp-color: #D84315;
+            --precipitation-color: #00838f;
+            --feels-like-color: #8D6E63;
+            --input-section-bg: #EDE7F6;
+
             font-family: 'Comic Sans MS', cursive, sans-serif;
-            background-color: #e0f7fa; /* Bleu clair */
-            color: #333;
             text-align: center;
             margin: 10px; /* Marges réduites pour mobile */
             overflow-x: hidden; /* Empêche le défilement horizontal */
+
+            background-color: var(--main-bg);
+            color: var(--main-text);
+            transition: background-color 0.8s ease, color 0.8s ease; /* Transition douce */
         }
+
+        /* Application des variables aux éléments */
+        h1 { color: var(--header-text); }
+        #current-location-display { color: var(--header-text); }
+        .section-title { color: var(--section-text); border-bottom-color: var(--section-text); }
+        .weather-card { background-color: var(--card-bg); }
+        .day-card { background-color: var(--card-bg); }
+        .weather-button { background-color: var(--button-bg); color: var(--button-text); }
+        /* Le bouton "Retour Charvieu" garde sa couleur spécifique */
+        #btn-back-to-charvieu { background-color: #FFC107; color: #333; }
+        .location-input-section { background-color: var(--input-section-bg); }
+        .location-input-section input[type="text"] { border-color: var(--input-border); }
+        .location-input-section button { background-color: var(--button-bg); color: var(--button-text); }
+        select { background-color: var(--select-bg); color: var(--select-text); border-color: var(--input-border); }
+        #city-selection-results { background-color: var(--card-bg); border-color: var(--input-border); }
+        .city-option-button { background-color: var(--city-option-bg); color: var(--button-text); }
+        .error-message { color: #e53935; } /* La couleur d'erreur reste rouge */
+        .temp { color: var(--temp-color); }
+        .temp-range { color: var(--temp-color); }
+        .precipitation { color: var(--precipitation-color); }
+        .feels-like { color: var(--feels-like-color); }
+
+
+        /* Thèmes de couleurs spécifiques */
+        .theme-sunny {
+            --main-bg: #ffe082; /* Jaune doux */
+            --main-text: #333;
+            --header-text: #D84315; /* Orange plus vif */
+            --section-text: #FF6F00; /* Orange */
+            --card-bg: #fff9c4; /* Jaune très clair */
+            --button-bg: #FFB300; /* Jaune orange */
+            --button-text: #333;
+            --input-border: #FFD54F;
+            --select-bg: #fff9c4;
+            --select-text: #333;
+            --city-option-bg: #FFECB3;
+            --temp-color: #E65100;
+            --precipitation-color: #2196F3; /* Bleu pour la pluie sur fond ensoleillé */
+            --feels-like-color: #BF360C;
+            --input-section-bg: #FFF8E1;
+        }
+
+        .theme-cloudy {
+            --main-bg: #cfd8dc; /* Gris bleuâtre doux */
+            --main-text: #333;
+            --header-text: #455A64; /* Gris foncé */
+            --section-text: #607D8B; /* Gris */
+            --card-bg: #eceff1; /* Gris très clair */
+            --button-bg: #78909C; /* Gris bleu */
+            --button-text: white;
+            --input-border: #90A4AE;
+            --select-bg: #eceff1;
+            --select-text: #333;
+            --city-option-bg: #B0BEC5;
+            --temp-color: #BF360C;
+            --precipitation-color: #00838f;
+            --feels-like-color: #546E7A;
+            --input-section-bg: #CFD8DC;
+        }
+
+        .theme-rainy {
+            --main-bg: #a7c0d8; /* Bleu gris de pluie */
+            --main-text: #333;
+            --header-text: #1A237E; /* Bleu très foncé */
+            --section-text: #283593; /* Bleu foncé */
+            --card-bg: #e3f2fd; /* Bleu très très clair */
+            --button-bg: #42A5F5; /* Bleu */
+            --button-text: white;
+            --input-border: #64B5F6;
+            --select-bg: #e3f2fd;
+            --select-text: #333;
+            --city-option-bg: #90CAF9;
+            --temp-color: #0D47A1;
+            --precipitation-color: #004D40; /* Bleu-vert foncé */
+            --feels-like-color: #3F51B5;
+            --input-section-bg: #BBDEFB;
+        }
+
+        .theme-snowy {
+            --main-bg: #e0f2f7; /* Blanc bleuâtre de neige */
+            --main-text: #333;
+            --header-text: #263238; /* Gris très foncé */
+            --section-text: #455A64; /* Gris foncé */
+            --card-bg: #f5f5f5; /* Presque blanc */
+            --button-bg: #64B5F6; /* Bleu clair */
+            --button-text: white;
+            --input-border: #90CAF9;
+            --select-bg: #f5f5f5;
+            --select-text: #333;
+            --city-option-bg: #BBDEFB;
+            --temp-color: #1976D2;
+            --precipitation-color: #0D47A1;
+            --feels-like-color: #42A5F5;
+            --input-section-bg: #E1F5FE;
+        }
+
+        .theme-thunderstorm {
+            --main-bg: #8d6e63; /* Marron foncé pour l'orage */
+            --main-text: #eee; /* Texte clair */
+            --header-text: #FFCC80; /* Orange clair */
+            --section-text: #FFAB40; /* Orange */
+            --card-bg: #4e342e; /* Marron très foncé */
+            --button-bg: #FF7043; /* Orange vif */
+            --button-text: white;
+            --input-border: #FF8A65;
+            --select-bg: #4e342e;
+            --select-text: #eee;
+            --city-option-bg: #BF360C;
+            --temp-color: #FFEB3B; /* Jaune vif */
+            --precipitation-color: #BDBDBD; /* Gris */
+            --feels-like-color: #FFAB40;
+            --input-section-bg: #5D4037;
+        }
+
+        .theme-mist {
+            --main-bg: #b0bec5; /* Gris brume */
+            --main-text: #333;
+            --header-text: #546E7A; /* Gris bleu foncé */
+            --section-text: #78909C; /* Gris bleu */
+            --card-bg: #cfd8dc; /* Gris bleuâtre doux */
+            --button-bg: #90A4AE; /* Gris */
+            --button-text: white;
+            --input-border: #B0BEC5;
+            --select-bg: #cfd8dc;
+            --select-text: #333;
+            --city-option-bg: #DCE7EB;
+            --temp-color: #607D8B;
+            --precipitation-color: #455A64;
+            --feels-like-color: #78909C;
+            --input-section-bg: #B0BEC5;
+        }
+
+        .theme-night {
+            --main-bg: #263238; /* Bleu très foncé/presque noir */
+            --main-text: #e0f2f7; /* Texte très clair */
+            --header-text: #BBDEFB; /* Bleu clair */
+            --section-text: #90CAF9; /* Bleu moyen */
+            --card-bg: #37474F; /* Gris foncé */
+            --button-bg: #42A5F5; /* Bleu */
+            --button-text: white;
+            --input-border: #64B5F6;
+            --select-bg: #37474F;
+            --select-text: #e0f2f7;
+            --city-option-bg: #5C6BC0;
+            --temp-color: #FFD54F; /* Jaune clair */
+            --precipitation-color: #BBDEFB;
+            --feels-like-color: #90CAF9;
+            --input-section-bg: #455A64;
+        }
+
         /* Nouvelle section pour l'en-tête principal */
         .main-header-section {
             display: flex;
@@ -35,12 +204,10 @@
             flex-grow: 1; /* Prend l'espace disponible sur desktop */
         }
         h1 {
-            color: #4A148C; /* Violet profond pour le titre */
             font-size: 1.8em; /* Plus petit pour mobile */
             margin-bottom: 5px; /* Moins d'espace */
         }
         #current-location-display {
-            color: #4A148C; /* Violet profond pour le nom de la ville */
             font-size: 1.5em; /* Plus petit pour mobile */
             font-weight: bold;
             margin-bottom: 10px;
@@ -52,36 +219,7 @@
             gap: 10px; /* Espacement entre les boutons */
             margin-bottom: 10px;
         }
-        .weather-button {
-            background-color: #8E24AA; /* Violet pour les boutons */
-            color: white;
-            padding: 10px 20px; /* Padding réduit pour mobile */
-            border: none;
-            border-radius: 20px; /* Rayon de bordure réduit */
-            font-size: 1em; /* Plus petit pour mobile */
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .weather-button:hover {
-            background-color: #7B1FA2;
-            transform: translateY(-1px);
-        }
-        .weather-button:active {
-            background-color: #6A1B9A;
-            transform: translateY(0);
-        }
-        #btn-back-to-charvieu {
-            background-color: #FFC107; /* Jaune vif */
-            color: #333;
-        }
-        #btn-back-to-charvieu:hover {
-            background-color: #FFA000;
-        }
-        #btn-back-to-charvieu:active {
-            background-color: #FF8F00;
-        }
-
+        
         /* Styles pour la carte */
         #map-container {
             width: 150px; /* Largeur fixe pour la carte sur mobile */
@@ -105,15 +243,7 @@
             max-width: 100%;
             margin: 10px auto;
         }
-        .section-title {
-            color: #6A1B9A;
-            font-size: 1.5em;
-            margin-top: 20px;
-            border-bottom: 2px solid #6A1B9A;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-
+        
         /* Styles spécifiques pour le layout 4x6 (hourly) */
         .hourly-forecast {
             display: grid;
@@ -125,7 +255,6 @@
         }
 
         .weather-card {
-            background-color: #F3E5F5;
             border-radius: 8px;
             padding: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -148,25 +277,7 @@
             margin: 2px 0;
             line-height: 1.2;
         }
-        .weather-card .temp {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #D84315;
-        }
-        .weather-card .feels-like {
-            font-size: 0.8em;
-            color: #8D6E63;
-        }
-        .weather-card .time {
-            font-size: 0.7em;
-            color: #757575;
-        }
-        .weather-card .precipitation {
-            font-size: 0.7em;
-            color: #00838f;
-            font-weight: bold;
-        }
-
+        
         /* Styles pour la frise de pluie minute par minute (minutely) */
         .minutely-forecast-container {
             display: flex;
@@ -202,13 +313,11 @@
             height: auto; /* Hauteur ajustée au contenu */
             font-size: 0.65em;
             color: #555;
-            /* padding: 0 2px; -- Supprimé pour un alignement précis avec la timeline */
         }
         .timeline-label {
             position: absolute; /* Positionnement absolu */
             top: 0; /* Aligné en haut du conteneur des labels */
             white-space: nowrap; /* Empêche le texte de passer à la ligne */
-            /* Les propriétés flex et width sont maintenant gérées par le JS via 'left' et 'transform' */
         }
 
         /* Styles pour les prévisions journalières (daily) */
@@ -222,7 +331,6 @@
             box-sizing: border-box;
         }
         .day-card {
-            background-color: #E1F5FE;
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -235,19 +343,6 @@
             min-height: 100px;
             box-sizing: border-box;
         }
-        .day-card .temp-range {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #bf360c;
-        }
-        .day-card .feels-like {
-            font-size: 0.8em;
-            color: #8D6E63;
-        }
-        .day-card .date {
-            font-size: 0.75em;
-            color: #757575;
-        }
         /* Style pour les emojis météo dans les cartes journalières */
         .day-card .weather-emoji {
             font-size: 2.5em; /* Grande taille pour les emojis */
@@ -257,7 +352,7 @@
 
         /* Styles pour la section de saisie de lieu (inchangés) */
         .location-input-section {
-            background-color: #EDE7F6;
+            background-color: var(--input-section-bg); /* Utilise la variable */
             border-radius: 10px;
             padding: 15px;
             margin-top: 20px;
@@ -270,26 +365,11 @@
         }
         .location-input-section input[type="text"] {
             padding: 10px;
-            border: 1px solid #B39DDB;
-            border-radius: 8px;
             font-size: 1.1em;
             width: 80%;
             max-width: 300px;
         }
-        .location-input-section button {
-            background-color: #42A5F5;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 20px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .location-input-section button:hover {
-            background-color: #2196F3;
-        }
-
+        
         /* Styles pour la liste de sélection de villes (inchangés) */
         #city-selection-results {
             margin-top: 15px;
@@ -299,25 +379,8 @@
             max-height: 200px;
             overflow-y: auto;
             padding: 10px;
-            border: 1px solid #bbdefb;
-            border-radius: 8px;
-            background-color: #E1F5FE;
         }
-        .city-option-button {
-            background-color: #90CAF9;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            text-align: left;
-        }
-        .city-option-button:hover {
-            background-color: #64B5F6;
-        }
-
+        
         /* Media queries pour les écrans plus grands (desktop) */
         @media (min-width: 768px) {
             body {
@@ -399,7 +462,6 @@
             .day-card .temp-range { font-size: 1.3em; }
             .day-card .feels-like { font-size: 0.9em; }
             .day-card .date { font-size: 0.9em; }
-            .day-card img { width: 60px; height: 60px; } /* Cette règle ne sera plus utilisée si on utilise des spans */
         }
     </style>
 </head>
@@ -457,6 +519,7 @@
         const UNITS = 'metric'; // Unités métriques (Celsius)
 
         // Éléments du DOM
+        const body = document.body;
         const currentLocationDisplay = document.getElementById('current-location-display');
         const btnLocateMe = document.getElementById('btn-locate-me');
         const btnChooseLocation = document.getElementById('btn-choose-location');
@@ -471,26 +534,58 @@
         // Fonction pour obtenir les icônes météo (maintenant des emojis)
         function getWeatherIcon(iconCode) {
             switch(iconCode) {
-                case "01d": return "☀️"; // Soleil (jour)
-                case "01n": return "🌙"; // Soleil (nuit)
-                case "02d": return "🌤️"; // Peu nuageux (jour)
-                case "02n": return "☁️🌙"; // Peu nuageux (nuit)
+                case "01d": return "☀️"; // Clear sky (day)
+                case "01n": return "🌙"; // Clear sky (night)
+                case "02d": return "🌤️"; // Few clouds (day)
+                case "02n": return "☁️🌙"; // Few clouds (night)
                 case "03d":
-                case "03n": return "☁️"; // Nuageux
+                case "03n": return "☁️"; // Scattered clouds
                 case "04d":
-                case "04n": return "☁️☁️"; // Très nuageux
+                case "04n": return "☁️☁️"; // Broken clouds / Overcast
                 case "09d":
-                case "09n": return "🌧️"; // Pluie faible
+                case "09n": return "🌧️"; // Shower rain
                 case "10d":
-                case "10n": return "☔"; // Pluie
+                case "10n": return "☔"; // Rain
                 case "11d":
-                case "11n": return "⛈️"; // Orage
+                case "11n": return "⛈️"; // Thunderstorm
                 case "13d":
-                case "13n": return "❄️"; // Neige
+                case "13n": return "❄️"; // Snow
                 case "50d":
-                case "50n": return "🌫️"; // Brouillard
-                default: return "❓"; // Icône par défaut
+                case "50n": return "🌫️"; // Mist
+                default: return "❓"; // Default icon
             }
+        }
+
+        // Fonction pour déterminer la classe de thème en fonction de l'icône OpenWeatherMap
+        function getThemeClass(iconCode) {
+            const isDay = iconCode.endsWith('d');
+            const baseIcon = iconCode.slice(0, -1); // e.g., "01" from "01d"
+
+            switch (baseIcon) {
+                case "01": return isDay ? "theme-sunny" : "theme-night";
+                case "02": return isDay ? "theme-cloudy" : "theme-night"; // Few clouds, can be similar to night theme
+                case "03": return "theme-cloudy";
+                case "04": return "theme-cloudy"; // Overcast is still cloudy
+                case "09": return "theme-rainy";
+                case "10": return "theme-rainy";
+                case "11": return "theme-thunderstorm";
+                case "13": return "theme-snowy";
+                case "50": return "theme-mist";
+                default: return "theme-sunny"; // Fallback
+            }
+        }
+
+        // Fonction pour appliquer le thème
+        function applyTheme(themeClassName) {
+            // Supprime toutes les classes de thème existantes
+            const themeClasses = [
+                "theme-sunny", "theme-cloudy", "theme-rainy", "theme-snowy",
+                "theme-thunderstorm", "theme-mist", "theme-night"
+            ];
+            themeClasses.forEach(cls => body.classList.remove(cls));
+            
+            // Ajoute la nouvelle classe de thème
+            body.classList.add(themeClassName);
         }
 
         // Fonction pour formater l'heure (ex: 14h00)
@@ -522,7 +617,8 @@
             citySelectionResults.innerHTML = ''; // Cacher les résultats de sélection de ville
             citySelectionResults.style.display = 'none';
 
-            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=current,alerts&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
+            // Modifier l'URL pour inclure les données "current" pour le thème
+            const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=alerts&appid=${API_KEY}&units=${UNITS}&lang=${LANG}`;
             
             try {
                 const response = await fetch(url);
@@ -531,6 +627,16 @@
                 }
                 const data = await response.json();
                 console.log(data);
+
+                // Appliquer le thème basé sur la météo actuelle
+                if (data.current && data.current.weather && data.current.weather.length > 0) {
+                    const currentIconCode = data.current.weather[0].icon;
+                    const themeClassName = getThemeClass(currentIconCode);
+                    applyTheme(themeClassName);
+                } else {
+                    // Fallback au thème ensoleillé si pas de données actuelles
+                    applyTheme("theme-sunny");
+                }
 
                 displayMinutelyForecast(data.minutely); 
                 displayHourlyForecast(data.hourly);
@@ -541,6 +647,7 @@
                 document.getElementById('hourly-forecast').innerHTML = '<p class="error-message">Oh non ! Je n\'arrive pas à trouver la météo pour le moment. Demande à un adulte de vérifier ma connexion Internet ou ma clé météo !</p>';
                 document.getElementById('daily-forecast').innerHTML = '';
                 currentLocationDisplay.textContent = `Météo pour ${locationName} (Erreur)`;
+                applyTheme("theme-cloudy"); // Applique un thème neutre en cas d'erreur
             }
         }
 
@@ -584,29 +691,24 @@
 
             const labelsDiv = document.createElement('div');
             labelsDiv.className = 'timeline-labels';
-            // Supprime le padding horizontal du conteneur des labels pour un alignement précis
-            // labelsDiv.style.padding = '0'; // Non nécessaire si retiré du CSS
-
             const now = new Date();
 
             for (let i = 0; i <= 60; i += 10) {
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'timeline-label';
                 
-                // Calcule la position en pourcentage de la largeur de la timeline
                 const positionPercentage = (i / 60) * 100;
                 labelSpan.style.left = `${positionPercentage}%`;
 
-                // Ajuste la transformation pour aligner le texte correctement au marqueur
                 if (i === 0) {
-                    labelSpan.style.transform = 'translateX(0%)'; // Aligne le bord gauche du texte avec le marqueur 0%
-                    labelSpan.style.textAlign = 'left'; // Assure que le texte est aligné à gauche dans sa propre boîte
+                    labelSpan.style.transform = 'translateX(0%)';
+                    labelSpan.style.textAlign = 'left';
                 } else if (i === 60) {
-                    labelSpan.style.transform = 'translateX(-100%)'; // Aligne le bord droit du texte avec le marqueur 100%
-                    labelSpan.style.textAlign = 'right'; // Assure que le texte est aligné à droite dans sa propre boîte
+                    labelSpan.style.transform = 'translateX(-100%)';
+                    labelSpan.style.textAlign = 'right';
                 } else {
-                    labelSpan.style.transform = 'translateX(-50%)'; // Centre le texte sur son marqueur
-                    labelSpan.style.textAlign = 'center'; // Assure que le texte est centré dans sa propre boîte
+                    labelSpan.style.transform = 'translateX(-50%)';
+                    labelSpan.style.textAlign = 'center';
                 }
 
                 const futureTime = new Date(now.getTime() + i * 60 * 1000);
