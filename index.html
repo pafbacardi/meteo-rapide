@@ -722,7 +722,7 @@
     </div>
 
     <!-- Section pour les alertes météo, placée tout en bas -->
-    <div class="collapsible-section">
+    <div class="collapsible-section" id="weather-alerts-section"> <!-- Ajout de l'ID ici pour le scroll -->
         <h2 class="section-title collapsible-toggle" data-target="weather-alerts-content">
             <span class="toggle-title-text">Alertes Météo ! ⚠️</span> <span class="toggle-icon">▼</span>
         </h2>
@@ -742,7 +742,7 @@
         const UNITS = 'metric'; // Unités métriques (Celsius)
 
         // Flag pour simuler les appels API
-        const SIMULATE_API_CALLS = false; // Définir à false pour les vrais appels API
+        const SIMULATE_API_CALLS = false; // Désactivé pour les vrais appels API
 
         // Éléments du DOM
         const body = document.body;
@@ -956,6 +956,7 @@
             // Sort data by timestamp to ensure chronological order
             hourlyData.sort((a, b) => a.dt - b.dt);
 
+            // Limite l'affichage aux 24 premières heures
             hourlyData.slice(0, 24).forEach(hour => {
                 // Ensure rain and snow volumes are numbers before calling toFixed
                 const rainVolume = hour.rain && typeof hour.rain['1h'] === 'number' ? hour.rain['1h'].toFixed(1) : '0';
@@ -1044,7 +1045,7 @@
                 snow: {}
             },
             minutely: Array(60).fill(0).map((_, i) => ({ dt: now + i * 60, precipitation: i < 10 && i % 3 === 0 ? 0.2 + Math.random() * 0.5 : 0 })),
-            hourly: Array(24).fill(0).map((_, i) => ({
+            hourly: Array(48).fill(0).map((_, i) => ({ // Maintenu à 48 pour simuler la réponse complète de l'API
                 dt: now + (i + 1) * 3600,
                 temp: 20 + Math.sin((now + (i + 1) * 3600) / 3600 / 12 * Math.PI) * 8, // Simule cycle jour/nuit
                 feels_like: 19 + Math.sin((now + (i + 1) * 3600) / 3600 / 12 * Math.PI) * 8,
@@ -1478,7 +1479,8 @@
                     const historicalHourlyData = await getHistoricalHourlyData(currentLat, currentLon);
                     if (historicalHourlyData.length > 0) {
                         displayHourlyForecast(historicalHourlyData, historicalDataDisplay);
-			expandSection('previous-hourly-forecast-content');
+                        // AJOUTE CETTE LIGNE CI-DESSOUS
+                        expandSection('previous-hourly-forecast-content'); // Ajuste la hauteur après le chargement
                     } else {
                         historicalDataDisplay.innerHTML = '<p class="error-message">Données historiques des 24h précédentes non disponibles pour cette localisation ou période.</p>';
                     }
@@ -1488,6 +1490,27 @@
                 }
             } else {
                 passwordErrorMessage.textContent = 'Mot de passe incorrect. Essaie encore !';
+            }
+        });
+
+        // --- Gestion du clic sur l'icône d'alerte ---
+        document.addEventListener('click', (event) => {
+            const alertIcon = event.target.closest('.alert-icon');
+            if (alertIcon) {
+                event.preventDefault(); // Empêche le comportement par défaut du lien
+                const alertsContentId = 'weather-alerts-content';
+                const alertsSection = document.getElementById('weather-alerts-section');
+
+                // 1. Déplier la section des alertes si elle est repliée
+                if (document.getElementById(alertsContentId).style.maxHeight === "0px" || !document.getElementById(alertsContentId).style.maxHeight) {
+                    expandSection(alertsContentId);
+                }
+
+                // 2. Faire défiler jusqu'à la section des alertes après un court délai
+                // (pour laisser le temps à la transition de dépliage de se terminer)
+                setTimeout(() => {
+                    alertsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 500); // Délai de 500ms, ajustable si la transition est plus longue
             }
         });
 
