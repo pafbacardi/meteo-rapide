@@ -648,7 +648,8 @@
             <div class="button-container">
                 <button id="btn-locate-me" class="weather-button">Météo ici ! 📍</button>
                 <button id="btn-choose-location" class="weather-button">Météo ailleurs... 🌍</button>
-                <button id="btn-back-to-charvieu" class="weather-button">Retour Charvieu-Chavagneux 🏠</button>
+                <button id="btn-back-to-charvieu" class="weather-button">Charvieu-Chavagneux 🏠</button>
+                <button id="btn-chatel" class="weather-button">Météo Châtel 🏔️</button> <!-- Nouveau bouton pour Châtel -->
             </div>
         </div>
         <div id="map-container">
@@ -737,7 +738,14 @@
         const API_KEY = '51aebd101995305de8a90d128247bdad'; // Ta clé API OpenWeatherMap
         const DEFAULT_LAT = 45.7167; // Latitude de Charvieu-Chavagneux
         const DEFAULT_LON = 5.15;    // Longitude de Charvieu-Chavagneux
-        const DEFAULT_LOCATION_NAME = 'Charvieu-Chavagneux';
+        const DEFAULT_LOCATION_NAME = 'Charvieu-Chavagneux'; // Nom mis à jour
+
+        // Constantes pour Châtel
+        const CHATEL_LAT = 46.267495226616674;
+        const CHATEL_LON = 6.840705801969403;
+        const CHATEL_LOCATION_NAME = 'Châtel, Haute-Savoie, France';
+
+
         const LANG = 'fr';   // Langue des résultats
         const UNITS = 'metric'; // Unités métriques (Celsius)
 
@@ -750,6 +758,7 @@
         const btnLocateMe = document.getElementById('btn-locate-me');
         const btnChooseLocation = document.getElementById('btn-choose-location');
         const btnBackToCharvieu = document.getElementById('btn-back-to-charvieu');
+        const btnChatel = document.getElementById('btn-chatel'); // Nouveau bouton
         const locationInputSection = document.getElementById('location-input-section');
         const cityInput = document.getElementById('city-input');
         const btnSearchLocation = document.getElementById('btn-search-location');
@@ -1391,6 +1400,14 @@
 
         btnBackToCharvieu.addEventListener('click', () => {
             updateWeatherForLocation(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION_NAME);
+            locationInputSection.style.display = 'none';
+            citySelectionResults.innerHTML = '';
+            citySelectionResults.style.display = 'none';
+        });
+
+        // Nouvel événement pour le bouton Châtel
+        btnChatel.addEventListener('click', () => {
+            updateWeatherForLocation(CHATEL_LAT, CHATEL_LON, CHATEL_LOCATION_NAME);
             locationInputSection.style.display = 'none';
             citySelectionResults.innerHTML = '';
             citySelectionResults.style.display = 'none';
