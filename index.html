@@ -651,7 +651,7 @@
                 <button id="btn-locate-me" class="weather-button">Météo ici ! 📍</button>
                 <button id="btn-choose-location" class="weather-button">Météo ailleurs... 🌍</button>
                 <button id="btn-back-to-charvieu" class="weather-button">Charvieu-Chavagneux 🏠</button>
-                <button id="btn-chatel" class="weather-button">Météo Châtel 🏔️</button> <!-- Nouveau bouton pour Châtel -->
+                <!-- Le bouton "Météo Châtel" a été supprimé -->
             </div>
         </div>
         <div id="map-container">
@@ -742,10 +742,10 @@
         const DEFAULT_LON = 5.15;    // Longitude de Charvieu-Chavagneux
         const DEFAULT_LOCATION_NAME = 'Charvieu-Chavagneux'; // Nom mis à jour
 
-        // Constantes pour Châtel
-        const CHATEL_LAT = 46.267495226616674;
-        const CHATEL_LON = 6.840705801969403;
-        const CHATEL_LOCATION_NAME = 'Châtel, Haute-Savoie, France';
+        // Constantes pour Châtel (supprimées car le bouton est supprimé)
+        // const CHATEL_LAT = 46.267495226616674;
+        // const CHATEL_LON = 6.840705801969403;
+        // const CHATEL_LOCATION_NAME = 'Châtel, Haute-Savoie, France';
 
 
         const LANG = 'fr';   // Langue des résultats
@@ -760,7 +760,7 @@
         const btnLocateMe = document.getElementById('btn-locate-me');
         const btnChooseLocation = document.getElementById('btn-choose-location');
         const btnBackToCharvieu = document.getElementById('btn-back-to-charvieu');
-        const btnChatel = document.getElementById('btn-chatel'); // Nouveau bouton
+        // const btnChatel = document.getElementById('btn-chatel'); // Bouton supprimé
         const locationInputSection = document.getElementById('location-input-section');
         const cityInput = document.getElementById('city-input');
         const btnSearchLocation = document.getElementById('btn-search-location');
@@ -1407,13 +1407,13 @@
             citySelectionResults.style.display = 'none';
         });
 
-        // Nouvel événement pour le bouton Châtel
-        btnChatel.addEventListener('click', () => {
-            updateWeatherForLocation(CHATEL_LAT, CHATEL_LON, CHATEL_LOCATION_NAME);
-            locationInputSection.style.display = 'none';
-            citySelectionResults.innerHTML = '';
-            citySelectionResults.style.display = 'none';
-        });
+        // L'événement pour le bouton Châtel a été supprimé
+        // btnChatel.addEventListener('click', () => {
+        //     updateWeatherForLocation(CHATEL_LAT, CHATEL_LON, CHATEL_LOCATION_NAME);
+        //     locationInputSection.style.display = 'none';
+        //     citySelectionResults.innerHTML = '';
+        //     citySelectionResults.style.display = 'none';
+        // });
 
         // --- Fonctions pour les sections dépliables ---
         function setupCollapsibles() {
